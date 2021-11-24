@@ -27,9 +27,9 @@ for stone_strt in [20, 30, 40, 50]:
 
     min_n_stones = 4 + stone_strt
     max_n_stones = 4 + stone_end
-    game_num = 56000
+    game_num = 2100
     test_ratio = 0.1
-    n_epochs = 10
+    n_epochs = 1
 
 
     line2_idx = [[8, 9, 10, 11, 12, 13, 14, 15], [1, 9, 17, 25, 33, 41, 49, 57], [6, 14, 22, 30, 38, 46, 54, 62], [48, 49, 50, 51, 52, 53, 54, 55]] # line2
@@ -175,7 +175,7 @@ for stone_strt in [20, 30, 40, 50]:
                     all_data[idx].append([0.0, (-v1 - 15) / 15, (v2 - 15) / 15, (v3 - 15) / 15])
                 '''
                 all_labels.append(result)
-
+    '''
     x = [None for _ in range(ln_in)]
     ys = []
     names = ['line2', 'line3', 'line4', 'diagonal5', 'diagonal6', 'diagonal7', 'diagonal8', 'edge2X', 'triangle', 'edgeblock', 'cross']
@@ -207,18 +207,18 @@ for stone_strt in [20, 30, 40, 50]:
     y_all = Dense(1, name='all_dense0')(y_all)
 
     model = Model(inputs=x, outputs=y_all)
-    
-    #model = load_model('learned_data/bef_' + str(stone_strt) + '_' + str(stone_end) + '.h5')
+    '''
+    model = load_model('learned_data/bef_' + str(stone_strt) + '_' + str(stone_end) + '.h5')
 
     model.summary()
     #plot_model(model, to_file='model.png', show_shapes=True)
 
     model.compile(loss='mse', metrics='mae', optimizer='adam')
-    model.save('learned_data/' + str(stone_strt) + '_' + str(stone_end) + '.h5')
+    #model.save('learned_data/' + str(stone_strt) + '_' + str(stone_end) + '.h5')
     
     #model.compile(loss=my_loss, metrics='mae', optimizer='adam')
 
-    for i in trange((game_num + 999) // 1000):
+    for i in trange((game_num + 99) // 100):
         collect_data(i)
     len_data = len(all_labels)
     print(len_data)
@@ -250,7 +250,7 @@ for stone_strt in [20, 30, 40, 50]:
     early_stop = EarlyStopping(monitor='val_loss', patience=5)
     model_checkpoint = ModelCheckpoint(filepath=os.path.join('learned_data/' + str(stone_strt) + '_' + str(stone_end), 'model_{epoch:02d}_{val_loss:.5f}_{val_mae:.5f}.h5'), monitor='val_loss', verbose=1)
     reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=2, min_lr=0.0001)
-    history = model.fit(train_data, train_labels, epochs=n_epochs, validation_data=(test_data, test_labels), callbacks=[early_stop, model_checkpoint, reduce_lr])
+    history = model.fit(train_data, train_labels, epochs=n_epochs, validation_data=(test_data, test_labels), callbacks=[early_stop, model_checkpoint])
 
     now = datetime.datetime.today()
     print(str(now.year) + digit(now.month, 2) + digit(now.day, 2) + '_' + digit(now.hour, 2) + digit(now.minute, 2))

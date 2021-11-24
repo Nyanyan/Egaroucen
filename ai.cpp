@@ -32,7 +32,7 @@ using namespace std;
 
 #define book_hash_table_size 8192
 constexpr int book_hash_mask = book_hash_table_size - 1;
-#define book_stones 64
+#define book_stones 34
 
 #define search_hash_table_size 1048576
 constexpr int search_hash_mask = search_hash_table_size - 1;
@@ -904,13 +904,13 @@ inline int end_game(const board *b){
 int nega_alpha(const board *b, bool skipped, int depth, int alpha, int beta);
 
 inline bool mpc_higher(const board *b, bool skipped, int depth, int beta){
-    //return false;
+    return false;
     int bound = beta + mpctsd[(b->n - 4) / 10][depth];
     return nega_alpha(b, skipped, mpcd[depth], bound - epsilon, bound) >= bound;
 }
 
 inline bool mpc_lower(const board *b, bool skipped, int depth, int alpha){
-    //return false;
+    return false;
     int bound = alpha - mpctsd[(b->n - 4) / 10][depth];
     return nega_alpha(b, skipped, mpcd[depth], bound, bound + epsilon) <= bound;
 }
@@ -1685,8 +1685,8 @@ int main(){
     board b;
     const int first_moves[4] = {19, 26, 37, 44};
     cin >> ai_player;
-    depth = 16;
-    final_depth = 20;
+    depth = 10;
+    final_depth = 17;
     long long strt = tim();
     search_result result;
     cerr << "initializing" << endl;

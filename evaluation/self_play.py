@@ -171,7 +171,7 @@ def record_rev_translate(y, x):
     x_str = chr(ord('a') + x)
     y_str = str(y + 1)
     return x_str + y_str
-
+'''
 with open('third_party/extract_prominence.txt', 'r') as f:
     data = [elem.split() for elem in f.read().splitlines()]
 tactic = {}
@@ -181,13 +181,13 @@ for r, p in data:
     else:
         tactic[r] = [p]
 print(len(tactic))
-
+'''
 ais = []
-evaluate = subprocess.Popen('./ai.out'.split(), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+evaluate = subprocess.Popen('./evaluate.out'.split(), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
 
 def init_ai():
     global ais
-    ais = [subprocess.Popen('./ai2.out'.split(), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL) for _ in range(2)]
+    ais = [subprocess.Popen('./ai.out'.split(), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL) for _ in range(2)]
     ais[0].stdin.write('0\n'.encode('utf-8'))
     ais[1].stdin.write('1\n'.encode('utf-8'))
 
@@ -205,6 +205,7 @@ def self_play():
         x = 5
         rv.move(y, x)
         record += record_rev_translate(y, x)
+        '''
         while True:
             if rv.check_pass() and rv.check_pass():
                 break
@@ -224,6 +225,7 @@ def self_play():
             data.append(grid_str.replace('\n', '') + ' ' + str(rv.player) + ' ' + add_data)
             rv.move(y, x)
             record += record_rev_translate(y, x)
+        '''
         break_flag = False
         while True:
             if rv.check_pass() and rv.check_pass():
@@ -267,12 +269,11 @@ def self_play():
                 result += vacant
             elif result < 0:
                 result -= vacant
-            '''
-            with open('data/' + digit(start_num + num // 1000, 7) + '.txt', 'a') as f:
+            result = -result
+            with open('data/' + digit(start_num + num // 100, 7) + '.txt', 'a') as f:
                 for datum in data:
                     f.write(datum + ' ' + str(result) + '\n')
-            '''
-            with open('self_play/' + digit(start_num + num // 1000, 7) + '.txt', 'a') as f:
+            with open('self_play/' + digit(start_num + num // 100, 7) + '.txt', 'a') as f:
                 f.write(record + '\n')
 
 
