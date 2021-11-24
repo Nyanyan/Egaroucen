@@ -27,7 +27,7 @@ for stone_strt in [20, 30, 40, 50]:
 
     min_n_stones = 4 + stone_strt
     max_n_stones = 4 + stone_end
-    game_num = 2100
+    game_num = 2000
     test_ratio = 0.1
     n_epochs = 1
 
