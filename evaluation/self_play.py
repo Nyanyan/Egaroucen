@@ -226,6 +226,26 @@ def self_play():
             rv.move(y, x)
             record += record_rev_translate(y, x)
         '''
+        for _ in range(15):
+            if rv.check_pass() and rv.check_pass():
+                break
+            coords = []
+            for yy in range(hw):
+                for xx in range(hw):
+                    if rv.grid[yy][xx] == 2:
+                        coords.append([yy, xx])
+            y, x = coords[randrange(0, len(coords))]
+            grid_str = ''
+            for yy in range(hw):
+                for xx in range(hw):
+                    grid_str += '0' if rv.grid[yy][xx] == 0 else '1' if rv.grid[yy][xx] == 1 else '.'
+                grid_str += '\n'
+            evaluate.stdin.write((str(rv.player) + '\n' + grid_str).encode('utf-8'))
+            evaluate.stdin.flush()
+            add_data = evaluate.stdout.readline().decode().replace('\r\n', '')
+            data.append(grid_str.replace('\n', '') + ' ' + str(rv.player) + ' ' + add_data)
+            rv.move(y, x)
+            record += record_rev_translate(y, x)
         break_flag = False
         while True:
             if rv.check_pass() and rv.check_pass():
@@ -283,3 +303,4 @@ for j in range(2):
         ais[j].kill()
     except:
         continue
+evaluate.kill()

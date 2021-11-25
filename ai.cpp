@@ -3,7 +3,7 @@
 #pragma GCC optimize("unroll-loops")
 #pragma GCC target("sse,sse2,sse3,ssse3,sse4,popcnt,abm,mmx")
 
-// Egaroucid4
+// Egaroucen
 
 #include <iostream>
 #include <fstream>
@@ -137,12 +137,13 @@ int canput_arr[2][n_line];
 int surround_arr[2][n_line];
 const double mpct[6]={1.6,1.6,1.6,1.5,1.5,1.4};
 const double mpcsd[6][mpc_max_depth-mpc_min_depth+1]={
-    {482,512,352,298,474,372,349,323,463,335},
-    {312,381,310,261,354,322,291,313,389,371},
-    {389,463,392,352,548,402,422,441,530,538},
-    {417,490,436,405,570,494,452,438,527,524},
-    {486,554,519,463,635,665,555,550,635,581},
-    {433,517,430,391,560,556,383,345,567,332}};
+    {0, 362, 440, 170, 468, 215, 200, 145, 222, 151},
+    {0, 759, 696, 153, 702, 189, 142, 119, 139, 149},
+    {0, 670, 722, 128, 763, 213, 176, 170, 165, 190},
+    {0, 713, 869, 243, 893, 333, 309, 316, 332, 380},
+    {0, 921, 981, 233, 963, 304, 282, 282, 343, 347},
+    {0, 1044, 1115, 426, 1030, 436, 607, 626, 682, 637}
+};
 const int mpcd[20]={0,0,0,1,2,1,2,3,4,3,4,3,4,5,6,5,6,5,6,7};
 int mpctsd[6][mpc_max_depth + 1];
 
@@ -904,13 +905,13 @@ inline int end_game(const board *b){
 int nega_alpha(const board *b, bool skipped, int depth, int alpha, int beta);
 
 inline bool mpc_higher(const board *b, bool skipped, int depth, int beta){
-    return false;
+    //return false;
     int bound = beta + mpctsd[(b->n - 4) / 10][depth];
     return nega_alpha(b, skipped, mpcd[depth], bound - epsilon, bound) >= bound;
 }
 
 inline bool mpc_lower(const board *b, bool skipped, int depth, int alpha){
-    return false;
+    //return false;
     int bound = alpha - mpctsd[(b->n - 4) / 10][depth];
     return nega_alpha(b, skipped, mpcd[depth], bound, bound + epsilon) <= bound;
 }
@@ -1685,8 +1686,8 @@ int main(){
     board b;
     const int first_moves[4] = {19, 26, 37, 44};
     cin >> ai_player;
-    depth = 12;
-    final_depth = 18;
+    depth = 18;
+    final_depth = 20;
     long long strt = tim();
     search_result result;
     cerr << "initializing" << endl;

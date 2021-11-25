@@ -1684,12 +1684,8 @@ inline void print_result(search_result result){
 
 int main(){
     cerr << myrandom() << endl;
-    int policy, n_stones, ai_player, depth, final_depth;
+    int policy, n_stones, ai_player, d1, d2;
     board b;
-    const int first_moves[4] = {19, 26, 37, 44};
-    cin >> ai_player;
-    depth = 7;
-    final_depth = 12;
     long long strt = tim();
     search_result result;
     cerr << "initializing" << endl;
@@ -1709,36 +1705,19 @@ int main(){
     search_hash_table_init(1 - f_search_table_idx);
     cerr << "iniitialized in " << tim() - strt << " ms" << endl;
     while (true){
+        cin >> ai_player;
+        cin >> d1;
+        cin >> d2;
         n_stones = input_board(b.b);
         strt = tim();
         cerr << "n_stones: " << n_stones << endl;
         cerr << n_stones - 4 << " moves" << endl;
         b.n = n_stones;
         b.p = ai_player;
-        cerr << "value: " << evaluate(&b) << endl;
-        if (n_stones == 4){
-            policy = first_moves[myrandrange(0, 4)];
-            print_result(policy, 0);
-            continue;
-        }
-        /*
-        if (n_stones < book_stones){
-            policy = get_book(b.b);
-            cerr << "book policy " << policy << endl;
-            if (policy != -1){
-                b = move(&b, policy);
-                ++n_stones;
-                result = search(b, strt, 10);
-                print_result(policy, -result.value);
-                continue;
-            }
-        }
-        */
-        if (n_stones >= hw2 - final_depth)
-            result = final_search(b, strt);
-        else
-            result = search(b, strt, depth);
-        print_result(result);
+        result = search(b, strt, d1);
+        cout << result.value << " ";
+        result = search(b, strt, d2);
+        cout << result.value << endl;
     }
     return 0;
 }

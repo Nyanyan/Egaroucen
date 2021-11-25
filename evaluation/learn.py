@@ -210,7 +210,7 @@ for stone_strt in [20, 30, 40, 50]:
     '''
     model = load_model('learned_data/bef_' + str(stone_strt) + '_' + str(stone_end) + '.h5')
 
-    model.summary()
+    #model.summary()
     #plot_model(model, to_file='model.png', show_shapes=True)
 
     model.compile(loss='mse', metrics='mae', optimizer='adam')

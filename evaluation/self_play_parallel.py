@@ -2,7 +2,7 @@ from math import tan, atan
 import subprocess
 
 play_num = 2000
-parallel_num = 4
+parallel_num = 5
 parallel_exe_num = play_num // parallel_num
 
 self_plays = [subprocess.Popen('python self_play.py'.split(), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=None) for _ in range(parallel_num)]

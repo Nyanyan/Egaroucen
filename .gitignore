@@ -1,6 +1,7 @@
 ai.out
 evaluation/ai.out
 evaluation/evaluate.out
+evaluation/mpc.out
 evaluation/self_play
 evaluation/data
 evaluation/learned_data
