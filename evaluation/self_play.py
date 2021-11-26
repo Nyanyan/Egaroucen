@@ -1,4 +1,4 @@
-from random import randrange
+from random import randrange, random
 import subprocess
 import sys
 from tqdm import trange
@@ -171,17 +171,15 @@ def record_rev_translate(y, x):
     x_str = chr(ord('a') + x)
     y_str = str(y + 1)
     return x_str + y_str
-'''
-with open('third_party/extract_prominence.txt', 'r') as f:
-    data = [elem.split() for elem in f.read().splitlines()]
-tactic = {}
-for r, p in data:
-    if r in tactic:
-        tactic[r].append(p)
-    else:
-        tactic[r] = [p]
-print(len(tactic))
-'''
+
+with open('records/prominence.txt', 'r') as f:
+    raw_tactic = [elem for elem in f.read().splitlines()]
+tactic = []
+for r in raw_tactic:
+    if len(r) < 25:
+        tactic.append(record_translate(r))
+ln_tactic = len(tactic)
+
 ais = []
 evaluate = subprocess.Popen('./evaluate.out'.split(), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
 
@@ -201,10 +199,16 @@ def self_play():
         record = ''
         data = []
         rv = reversi()
-        y = 4
-        x = 5
-        rv.move(y, x)
-        record += record_rev_translate(y, x)
+        if random() < 0.3:
+            y = 4
+            x = 5
+            rv.move(y, x)
+            record += record_rev_translate(y, x)
+        else:
+            for y, x in tactic[randrange(0, ln_tactic)]:
+                rv.check_pass()
+                rv.move(y, x)
+                record += record_rev_translate(y, x)
         '''
         while True:
             if rv.check_pass() and rv.check_pass():

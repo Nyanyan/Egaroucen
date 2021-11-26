@@ -1714,10 +1714,12 @@ int main(){
         cerr << n_stones - 4 << " moves" << endl;
         b.n = n_stones;
         b.p = ai_player;
-        result = search(b, strt, d1);
-        cout << result.value << " ";
-        result = search(b, strt, d2);
-        cout << result.value << endl;
+        search_hash_table_init(1 - f_search_table_idx);
+        search_hash_table_init(f_search_table_idx);
+        cout << nega_scout(&b, strt, false, d1, -sc_w, sc_w) << " ";
+        search_hash_table_init(1 - f_search_table_idx);
+        search_hash_table_init(f_search_table_idx);
+        cout << nega_scout(&b, strt, false, d2, -sc_w, sc_w) << endl;
     }
     return 0;
 }

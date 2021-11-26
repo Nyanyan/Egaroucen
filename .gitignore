@@ -5,3 +5,4 @@ evaluation/mpc.out
 evaluation/self_play
 evaluation/data
 evaluation/learned_data
+evaluation/records
