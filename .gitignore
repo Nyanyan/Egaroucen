@@ -1,5 +1,5 @@
 *.out
-legacy/evaluation/self_play
-legacy/evaluation/data
-legacy/evaluation/learned_data
-legacy/evaluation/records
+*/evaluation/self_play
+*/evaluation/data
+*/evaluation/learned_data
+*/evaluation/records
