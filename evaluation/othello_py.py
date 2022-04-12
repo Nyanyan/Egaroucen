@@ -1,5 +1,5 @@
 # Python othello lib
-# last updated: 2022/04/12 21:38
+# last updated: 2022/04/12 21:40
 
 hw = 8
 hw2 = 64
@@ -22,6 +22,9 @@ class othello:
         self.grid[4][4] = white
         self.player = black
         self.n_stones = [2, 2]
+    
+    def do_pass(self):
+        self.player = 1 - self.player
 
     def get_legal(self):
         res = [[False for _ in range(hw)] for _ in range(hw)]
