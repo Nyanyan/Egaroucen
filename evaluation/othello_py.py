@@ -1,5 +1,5 @@
 # Python othello lib
-# last updated: 2022/04/12 22:03
+# last updated: 2022/04/12 22:06
 
 hw = 8
 hw2 = 64
@@ -139,4 +139,5 @@ class othello:
                     res += '.'
                 else:
                     res += str(self.grid[y][x])
+        res += '\n'
         return res

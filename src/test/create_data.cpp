@@ -7,7 +7,6 @@ int main(int argc, char *argv[]){
     bit_init();
     flip_init();
     board_init();
-    evaluate_init();
     parent_transpose_table.first_init();
     child_transpose_table.first_init();
     int level = 5;

@@ -375,7 +375,7 @@ inline int calc_canput_pattern(const int phase_idx, Board *b, const uint64_t pla
 }
 
 inline void print_info_canput_pattern(Board *b, const uint64_t player_mobility, const uint64_t opponent_mobility){
-    cerr << create_canput_line_h(player_mobility, opponent_mobility, 0) << " " << 
+    cout << create_canput_line_h(player_mobility, opponent_mobility, 0) << " " << 
     create_canput_line_h(player_mobility, opponent_mobility, 7) << " " << 
     create_canput_line_v(player_mobility, opponent_mobility, 0) << " " << 
     create_canput_line_v(player_mobility, opponent_mobility, 7) << " " << 

@@ -1,4 +1,6 @@
 import glob
+import subprocess
+from tqdm import tqdm
 from othello_py import othello
 
 def digit(n, r):
@@ -13,20 +15,28 @@ def notation_to_coord(notation):
     x = ord(notation[0].lower()) - ord('a')
     return y, x
 
-directory = int(input())
+directory = int(input('directory: '))
 directory_filled = digit(directory, 7)
 
 files = glob.glob('./self_play/' + directory_filled + '/*')
 print(files)
 
-for file in files:
+exe = subprocess.Popen('./../src/test/create_data.out'.split(), stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr=subprocess.DEVNULL)
+
+for num, file in enumerate(files):
     with open(file, 'r') as f:
         records = f.read().splitlines()
-    for record in records:
-        o = othello()
-        for i in range(0, len(record), 2):
-            notation = record[i:i + 2]
-            y, x = notation_to_coord(notation)
-            if not othello.move(y, x):
-                o.do_pass()
-                othello.move(y, x)
+    with open('./data/' + digit(num, 7) + '.txt', 'w') as f:
+        for record in tqdm(records):
+            o = othello()
+            for i in range(0, len(record), 2):
+                exe.stdin.write(o.create_input_str().encode('utf-8'))
+                exe.stdin.flush()
+                f.write(exe.stdout.readline().decode().replace('\r', '').replace('\n', '') + '\n')
+                notation = record[i:i + 2]
+                y, x = notation_to_coord(notation)
+                if not o.move(y, x):
+                    o.do_pass()
+                    o.move(y, x)
+
+exe.kill()
