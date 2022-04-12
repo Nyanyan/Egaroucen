@@ -3,3 +3,7 @@
 */evaluation/data
 */evaluation/learned_data
 */evaluation/records
+evaluation/self_play
+evaluation/data
+evaluation/learned_data
+evaluation/records
