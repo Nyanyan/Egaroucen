@@ -1,5 +1,5 @@
 # Python othello lib
-# last updated: 2022/04/12 21:40
+# last updated: 2022/04/12 21:49
 
 hw = 8
 hw2 = 64
@@ -90,6 +90,8 @@ class othello:
                     ny = y + dy[dr] * (d + 1)
                     nx = x + dx[dr] * (d + 1)
                     self.grid[ny][nx] = self.player
+        if n_flipped == 0:
+            return False
         self.grid[y][x] = self.player
         self.n_stones[self.player] += n_flipped + 1
         self.n_stones[1 - self.player] -= n_flipped
