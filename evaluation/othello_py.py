@@ -1,5 +1,5 @@
 # Python othello lib
-# last updated: 2022/04/12 21:49
+# last updated: 2022/04/12 22:03
 
 hw = 8
 hw2 = 64
@@ -130,3 +130,13 @@ class othello:
                     print('.', end=' ')
             print('')
         print('Black X ', self.n_stones[0], '-', self.n_stones[1], ' O White')
+    
+    def create_input_str(self):
+        res = str(self.player) + '\n'
+        for y in range(hw):
+            for x in range(hw):
+                if self.grid[y][x] == vacant:
+                    res += '.'
+                else:
+                    res += str(self.grid[y][x])
+        return res

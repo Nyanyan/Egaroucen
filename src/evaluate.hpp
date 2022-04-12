@@ -303,6 +303,49 @@ inline int calc_pattern(const int phase_idx, Board *b){
         pick_pattern(phase_idx, 13, b_arr, 0, 1, 2, 3, 4, 8, 9, 16, 24, 32) + pick_pattern(phase_idx, 13, b_arr, 7, 6, 5, 4, 3, 15, 14, 23, 31, 39) + pick_pattern(phase_idx, 13, b_arr, 63, 62, 61, 60, 59, 55, 54, 47, 39, 31) + pick_pattern(phase_idx, 13, b_arr, 56, 57, 58, 59, 60, 48, 49, 40, 32, 24);
 }
 
+inline int pick_pattern_idx(const uint_fast8_t b_arr[], const int p0, const int p1, const int p2, const int p3, const int p4){
+    return b_arr[p0] * P34 + b_arr[p1] * P33 + b_arr[p2] * P32 + b_arr[p3] * P31 + b_arr[p4];
+}
+
+inline int pick_pattern_idx(const uint_fast8_t b_arr[], const int p0, const int p1, const int p2, const int p3, const int p4, const int p5){
+    return b_arr[p0] * P35 + b_arr[p1] * P34 + b_arr[p2] * P33 + b_arr[p3] * P32 + b_arr[p4] * P31 + b_arr[p5];
+}
+
+inline int pick_pattern_idx(const uint_fast8_t b_arr[], const int p0, const int p1, const int p2, const int p3, const int p4, const int p5, const int p6){
+    return b_arr[p0] * P36 + b_arr[p1] * P35 + b_arr[p2] * P34 + b_arr[p3] * P33 + b_arr[p4] * P32 + b_arr[p5] * P31 + b_arr[p6];
+}
+
+inline int pick_pattern_idx(const uint_fast8_t b_arr[], const int p0, const int p1, const int p2, const int p3, const int p4, const int p5, const int p6, const int p7){
+    return b_arr[p0] * P37 + b_arr[p1] * P36 + b_arr[p2] * P35 + b_arr[p3] * P34 + b_arr[p4] * P33 + b_arr[p5] * P32 + b_arr[p6] * P31 + b_arr[p7];
+}
+
+inline int pick_pattern_idx(const uint_fast8_t b_arr[], const int p0, const int p1, const int p2, const int p3, const int p4, const int p5, const int p6, const int p7, const int p8){
+    return b_arr[p0] * P38 + b_arr[p1] * P37 + b_arr[p2] * P36 + b_arr[p3] * P35 + b_arr[p4] * P34 + b_arr[p5] * P33 + b_arr[p6] * P32 + b_arr[p7] * P31 + b_arr[p8];
+}
+
+inline int pick_pattern_idx(const uint_fast8_t b_arr[], const int p0, const int p1, const int p2, const int p3, const int p4, const int p5, const int p6, const int p7, const int p8, const int p9){
+    return b_arr[p0] * P39 + b_arr[p1] * P38 + b_arr[p2] * P37 + b_arr[p3] * P36 + b_arr[p4] * P35 + b_arr[p5] * P34 + b_arr[p6] * P33 + b_arr[p7] * P32 + b_arr[p8] * P31 + b_arr[p9];
+}
+
+inline void print_info_pattern(Board *b){
+    uint_fast8_t b_arr[HW2];
+    b->translate_to_arr_player(b_arr);
+    cout << pick_pattern_idx(b_arr, 8, 9, 10, 11, 12, 13, 14, 15) << " " << pick_pattern_idx(b_arr, 1, 9, 17, 25, 33, 41, 49, 57) << " " << pick_pattern_idx(b_arr, 48, 49, 50, 51, 52, 53, 54, 55) << " " << pick_pattern_idx(b_arr, 6, 14, 22, 30, 38, 46, 54, 62) << " " << 
+    pick_pattern_idx(b_arr, 16, 17, 18, 19, 20, 21, 22, 23) << " " << pick_pattern_idx(b_arr, 2, 10, 18, 26, 34, 42, 50, 58) << " " << pick_pattern_idx(b_arr, 40, 41, 42, 43, 44, 45, 46, 47) << " " << pick_pattern_idx(b_arr, 5, 13, 21, 29, 37, 45, 53, 61) << " " << 
+    pick_pattern_idx(b_arr, 24, 25, 26, 27, 28, 29, 30, 31) << " " << pick_pattern_idx(b_arr, 3, 11, 19, 27, 35, 43, 51, 59) << " " << pick_pattern_idx(b_arr, 32, 33, 34, 35, 36, 37, 38, 39) << " " << pick_pattern_idx(b_arr, 4, 12, 20, 28, 36, 44, 52, 60) << " " << 
+    pick_pattern_idx(b_arr, 3, 12, 21, 30, 39) << " " << pick_pattern_idx(b_arr, 4, 11, 18, 25, 32) << " " << pick_pattern_idx(b_arr, 24, 33, 42, 51, 60) << " " << pick_pattern_idx(b_arr, 59, 52, 45, 38, 31) << " " << 
+    pick_pattern_idx(b_arr, 2, 11, 20, 29, 38, 47) << " " << pick_pattern_idx(b_arr, 5, 12, 19, 26, 33, 40) << " " << pick_pattern_idx(b_arr, 16, 25, 34, 43, 52, 61) << " " << pick_pattern_idx(b_arr, 58, 51, 44, 37, 30, 23) << " " << 
+    pick_pattern_idx(b_arr, 1, 10, 19, 28, 37, 46, 55) << " " << pick_pattern_idx(b_arr, 6, 13, 20, 27, 34, 41, 48) << " " << pick_pattern_idx(b_arr, 8, 17, 26, 35, 44, 53, 62) << " " << pick_pattern_idx(b_arr, 57, 50, 43, 36, 29, 22, 15) << " " << 
+    pick_pattern_idx(b_arr, 0, 9, 18, 27, 36, 45, 54, 63) << " " << pick_pattern_idx(b_arr, 7, 14, 21, 28, 35, 42, 49, 56) << " " << 
+    pick_pattern_idx(b_arr, 9, 0, 1, 2, 3, 4, 5, 6, 7, 14) << " " << pick_pattern_idx(b_arr, 9, 0, 8, 16, 24, 32, 40, 48, 56, 49) << " " << pick_pattern_idx(b_arr, 49, 56, 57, 58, 59, 60, 61, 62, 63, 54) << " " << pick_pattern_idx(b_arr, 54, 63, 55, 47, 39, 31, 23, 15, 7, 14) << " " << 
+    pick_pattern_idx(b_arr, 0, 1, 2, 3, 8, 9, 10, 16, 17, 24) << " " << pick_pattern_idx(b_arr, 7, 6, 5, 4, 15, 14, 13, 23, 22, 31) << " " << pick_pattern_idx(b_arr, 63, 62, 61, 60, 55, 54, 53, 47, 46, 39) << " " << pick_pattern_idx(b_arr, 56, 57, 58, 59, 48, 49, 50, 40, 41, 32) << " " << 
+    pick_pattern_idx(b_arr, 0, 2, 3, 4, 5, 7, 10, 11, 12, 13) << " " << pick_pattern_idx(b_arr, 0, 16, 24, 32, 40, 56, 17, 25, 33, 41) << " " << pick_pattern_idx(b_arr, 56, 58, 59, 60, 61, 63, 50, 51, 52, 53) << " " << pick_pattern_idx(b_arr, 7, 23, 31, 39, 47, 63, 22, 30, 38, 46) << " " << 
+    pick_pattern_idx(b_arr, 0, 9, 18, 27, 1, 10, 19, 8, 17, 26) << " " << pick_pattern_idx(b_arr, 7, 14, 21, 28, 6, 13, 20, 15, 22, 29) << " " << pick_pattern_idx(b_arr, 56, 49, 42, 35, 57, 50, 43, 48, 41, 34) << " " << pick_pattern_idx(b_arr, 63, 54, 45, 36, 62, 53, 44, 55, 46, 37) << " " << 
+    pick_pattern_idx(b_arr, 0, 1, 2, 8, 9, 10, 16, 17, 18) << " " << pick_pattern_idx(b_arr, 7, 6, 5, 15, 14, 13, 23, 22, 21) << " " << pick_pattern_idx(b_arr, 56, 57, 58, 48, 49, 50, 40, 41, 42) << " " << pick_pattern_idx(b_arr, 63, 62, 61, 55, 54, 53, 47, 46, 45) << " " << 
+    pick_pattern_idx(b_arr, 10, 0, 1, 2, 3, 4, 5, 6, 7, 13) << " " << pick_pattern_idx(b_arr, 17, 0, 8, 16, 24, 32, 40, 48, 56, 41) << " " << pick_pattern_idx(b_arr, 50, 56, 57, 58, 59, 60, 61, 62, 63, 53) << " " << pick_pattern_idx(b_arr, 46, 63, 55, 47, 39, 31, 23, 15, 7, 22) << " " << 
+    pick_pattern_idx(b_arr, 0, 1, 2, 3, 4, 8, 9, 16, 24, 32) << " " << pick_pattern_idx(b_arr, 7, 6, 5, 4, 3, 15, 14, 23, 31, 39) << " " << pick_pattern_idx(b_arr, 63, 62, 61, 60, 59, 55, 54, 47, 39, 31) << " " << pick_pattern_idx(b_arr, 56, 57, 58, 59, 60, 48, 49, 40, 32, 24) << " ";
+}
+
 inline int create_canput_line_h(uint64_t b, uint64_t w, int t){
     return (((w >> (HW * t)) & 0b11111111) << HW) | ((b >> (HW * t)) & 0b11111111);
 }
@@ -331,19 +374,37 @@ inline int calc_canput_pattern(const int phase_idx, Board *b, const uint64_t pla
         canput_pattern_arr[phase_idx][3][create_canput_line_v(player_mobility, opponent_mobility, 4)];
 }
 
+inline void print_info_canput_pattern(Board *b, const uint64_t player_mobility, const uint64_t opponent_mobility){
+    cerr << create_canput_line_h(player_mobility, opponent_mobility, 0) << " " << 
+    create_canput_line_h(player_mobility, opponent_mobility, 7) << " " << 
+    create_canput_line_v(player_mobility, opponent_mobility, 0) << " " << 
+    create_canput_line_v(player_mobility, opponent_mobility, 7) << " " << 
+    create_canput_line_h(player_mobility, opponent_mobility, 1) << " " << 
+    create_canput_line_h(player_mobility, opponent_mobility, 6) << " " << 
+    create_canput_line_v(player_mobility, opponent_mobility, 1) << " " << 
+    create_canput_line_v(player_mobility, opponent_mobility, 6) << " " << 
+    create_canput_line_h(player_mobility, opponent_mobility, 2) << " " << 
+    create_canput_line_h(player_mobility, opponent_mobility, 5) << " " << 
+    create_canput_line_v(player_mobility, opponent_mobility, 2) << " " << 
+    create_canput_line_v(player_mobility, opponent_mobility, 5) << " " << 
+    create_canput_line_h(player_mobility, opponent_mobility, 3) << " " << 
+    create_canput_line_h(player_mobility, opponent_mobility, 4) << " " << 
+    create_canput_line_v(player_mobility, opponent_mobility, 3) << " " << 
+    create_canput_line_v(player_mobility, opponent_mobility, 4) << endl;
+}
+
 inline int end_evaluate(Board *b){
     int res = -b->score_player();
     return score_to_value(res);
 }
 
 inline int mid_evaluate(Board *b){
-    int phase_idx, sur0, sur1, canput0, canput1, stab0, stab1, num0, num1;
     uint64_t player_mobility, opponent_mobility, empties;
     player_mobility = calc_legal(b->player, b->opponent);
     opponent_mobility = calc_legal(b->opponent, b->player);
     if (player_mobility == 0ULL && opponent_mobility == 0ULL)
         return end_evaluate(b);
-    phase_idx = b->phase();
+    int phase_idx = b->phase();
     int res = calc_pattern(phase_idx, b) + calc_canput_pattern(phase_idx, b, player_mobility, opponent_mobility);
     if (res > 0)
         res += STEP_2;
@@ -351,4 +412,12 @@ inline int mid_evaluate(Board *b){
         res -= STEP_2;
     res /= STEP;
     return max(-SCORE_MAX, min(SCORE_MAX, res));
+}
+
+inline void print_evaluate_info(Board *b){
+    uint64_t player_mobility, opponent_mobility, empties;
+    player_mobility = calc_legal(b->player, b->opponent);
+    opponent_mobility = calc_legal(b->opponent, b->player);
+    print_info_pattern(b);
+    print_info_canput_pattern(b, player_mobility, opponent_mobility);
 }
