@@ -29,14 +29,26 @@ for num, file in enumerate(files):
     with open('./data/' + digit(num, 7) + '.txt', 'w') as f:
         for record in tqdm(records):
             o = othello()
+            data = []
             for i in range(0, len(record), 2):
                 exe.stdin.write(o.create_input_str().encode('utf-8'))
                 exe.stdin.flush()
-                f.write(exe.stdout.readline().decode().replace('\r', '').replace('\n', '') + '\n')
+                data.append([o.player, exe.stdout.readline().decode().replace('\r', '').replace('\n', '') + '\n'])
                 notation = record[i:i + 2]
                 y, x = notation_to_coord(notation)
                 if not o.move(y, x):
                     o.do_pass()
                     o.move(y, x)
+            score = o.n_stones[0] - o.n_stones[1]
+            vac = 64 - sum(o.n_stones)
+            if score > 0:
+                score += vac
+            elif score < 0:
+                score -= vac
+            for player, datum in data:
+                if player == 0:
+                    f.write(str(player) + ' ' + str(-score) + ' ' + datum)
+                else:
+                    f.write(str(player) + ' ' + str(score) + ' ' + datum)
 
 exe.kill()
