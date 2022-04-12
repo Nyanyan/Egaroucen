@@ -16,17 +16,6 @@ using namespace std;
 
 #define SCORE_UNDEFINED -INF
 
-constexpr int cell_weight[HW2] = {
-    18,  4,  16, 12, 12, 16,  4, 18,
-     4,  2,   6,  8,  8,  6,  2,  4,
-    16,  6,  14, 10, 10, 14,  6, 16,
-    12,  8,  10,  0,  0, 10,  8, 12,
-    12,  8,  10,  0,  0, 10,  8, 12,
-    16,  6,  14, 10, 10, 14,  6, 16,
-     4,  2,   6,  8,  8,  6,  2,  4,
-    18,  4,  16, 12, 12, 16,  4, 18
-};
-
 struct Search_result{
     int policy;
     int value;
@@ -44,6 +33,7 @@ struct Search{
 };
 
 inline int stability_cut(Search *search, int *alpha, int *beta){
+    /*
     int stab_player, stab_opponent;
     calc_stability(&search->board, &stab_player, &stab_opponent);
     int n_alpha = 2 * stab_player - HW2;
@@ -56,5 +46,6 @@ inline int stability_cut(Search *search, int *alpha, int *beta){
         return n_alpha;
     *alpha = max(*alpha, n_alpha);
     *beta = min(*beta, n_beta);
+    */
     return SCORE_UNDEFINED;
 }

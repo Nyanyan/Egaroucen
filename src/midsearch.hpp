@@ -12,10 +12,6 @@
 #include "endsearch.hpp"
 #include "move_ordering.hpp"
 #include "probcut.hpp"
-#if USE_MULTI_THREAD
-    #include "thread_pool.hpp"
-    #include "ybwc.hpp"
-#endif
 #if USE_LOG
     #include "log.hpp"
 #endif

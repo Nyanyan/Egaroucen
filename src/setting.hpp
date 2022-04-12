@@ -12,18 +12,15 @@
 #define USE_END_TC true
 
 // parity ordering
-#define USE_END_PO true
+#define USE_END_PO false
 
 // stability cut
 #define USE_MID_SC false
 #define USE_END_SC false
 
-// parallel search
-#define USE_MULTI_THREAD true
-
 // prob cut
-#define USE_MID_MPC true
-#define USE_END_MPC true
+#define USE_MID_MPC false
+#define USE_END_MPC false
 
 // legal calculation
 #define LEGAL_CALCULATION_MODE 5

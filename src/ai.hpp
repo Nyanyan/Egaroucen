@@ -4,7 +4,6 @@
 #include <unordered_set>
 #include "level.hpp"
 #include "midsearch.hpp"
-#include "book.hpp"
 #include "util.hpp"
 
 #define SEARCH_FINAL 100
@@ -22,7 +21,6 @@ inline Search_result tree_search(Board board, int depth, bool use_mpc, double mp
     bool is_end_search = (HW2 - board.n == depth);
     search.board = board;
     search.n_nodes = 0ULL;
-    uint64_t strt = tim();
 
     if (is_end_search){
         child_transpose_table.init();
@@ -74,9 +72,6 @@ inline Search_result tree_search(Board board, int depth, bool use_mpc, double mp
             }
         }
 
-        if (show_log)
-            cerr << "presearch n_nodes " << search.n_nodes << " nps " << search.n_nodes * 1000 / max(1ULL, tim() - strt) << endl;
-
         parent_transpose_table.init();
         search.use_mpc = use_mpc;
         search.mpct = mpct;
@@ -113,7 +108,7 @@ inline Search_result tree_search(Board board, int depth, bool use_mpc, double mp
         }
         policy = result.second;
         if (show_log)
-            cerr << "depth " << depth << " value " << value_to_score_double(g) << " policy " << idx_to_coord(policy) << " nodes " << search.n_nodes << " time " << (tim() - strt) << " nps " << search.n_nodes * 1000 / max(1ULL, tim() - strt) << endl;
+            cerr << "depth " << depth << " value " << value_to_score_double(g) << " policy " << idx_to_coord(policy) << " nodes " << search.n_nodes << endl;
     
     } else{
         child_transpose_table.init();
@@ -126,7 +121,7 @@ inline Search_result tree_search(Board board, int depth, bool use_mpc, double mp
             g = result.first;
             policy = result.second;
             if (show_log)
-                cerr << "presearch time " << tim() - strt << " depth " << depth << " value " << value_to_score_double(g) << " policy " << idx_to_coord(policy) << " nodes " << search.n_nodes << " time " << (tim() - strt) << " nps " << search.n_nodes * 1000 / max(1ULL, tim() - strt) << endl;
+                cerr << " depth " << depth << " value " << value_to_score_double(g) << " policy " << idx_to_coord(policy) << " nodes " << search.n_nodes << endl;
         }
         search.use_mpc = 1;
         search.mpct = 0.9;
@@ -138,7 +133,7 @@ inline Search_result tree_search(Board board, int depth, bool use_mpc, double mp
             g = result.first;
             policy = result.second;
             if (show_log)
-                cerr << "presearch time " << tim() - strt << " depth " << depth - 1 << " value " << value_to_score_double(g) << " policy " << idx_to_coord(policy) << " nodes " << search.n_nodes << " time " << (tim() - strt) << " nps " << search.n_nodes * 1000 / max(1ULL, tim() - strt) << endl;
+                cerr << "presearch depth " << depth - 1 << " value " << value_to_score_double(g) << " policy " << idx_to_coord(policy) << " nodes " << search.n_nodes << endl;
         }
         search.use_mpc = use_mpc;
         search.mpct = mpct;
@@ -151,12 +146,12 @@ inline Search_result tree_search(Board board, int depth, bool use_mpc, double mp
             g = (g + result.first) / 2;
         policy = result.second;
         if (show_log)
-            cerr << "midsearch time " << tim() - strt << " depth " << depth << " value " << value_to_score_double(g) << " policy " << idx_to_coord(policy) << " nodes " << search.n_nodes << " time " << (tim() - strt) << " nps " << search.n_nodes * 1000 / max(1ULL, tim() - strt) << endl;
+            cerr << "midsearch depth " << depth << " value " << value_to_score_double(g) << " policy " << idx_to_coord(policy) << " nodes " << search.n_nodes << endl;
     }
     Search_result res;
     res.depth = depth;
     res.nodes = search.n_nodes;
-    res.nps = search.n_nodes * 1000 / max(1ULL, tim() - strt);
+    res.nps = 0;
     res.policy = policy;
     res.value = value_to_score_int(g);
     return res;
@@ -176,16 +171,9 @@ inline double tree_search_noid(Board board, int depth, bool use_mpc, double mpct
     return value_to_score_double(g);
 }
 
-Search_result ai(Board b, int level, bool use_book, int book_error){
+Search_result ai(Board b, int level){
     Search_result res;
-    Book_value book_result = book.get_random(&b, book_error);
-    if (book_result.policy != -1 && use_book){
-        cerr << "BOOK " << book_result.policy << " " << book_result.value << endl;
-        res.policy = book_result.policy;
-        res.value = book_result.value;
-        res.depth = SEARCH_BOOK;
-        res.nps = 0;
-    } else if (level == 0){
+    if (level == 0){
         uint64_t legal = b.get_legal();
         vector<int> move_lst;
         for (uint_fast8_t cell = first_bit(&legal); legal; cell = next_bit(&legal))
@@ -202,6 +190,16 @@ Search_result ai(Board b, int level, bool use_book, int book_error){
         cerr << "level status " << level << " " << b.n - 4 << " " << depth << " " << use_mpc << " " << mpct << endl;
         res = tree_search(b, depth, use_mpc, mpct, true);
     }
+    return res;
+}
+
+Search_result random_ai(Board b){
+    uint64_t legal = b.get_legal();
+    vector<int> legals;
+    for (uint8_t cell = first_bit(&legal); legal; cell = next_bit(&legal))
+        legals.emplace_back(cell);
+    Search_result res;
+    res.policy = legals[myrandrange(0, (int)legals.size())];
     return res;
 }
 
@@ -223,22 +221,13 @@ bool ai_hint(Board b, int level, int max_level, int res[], int info[], bool best
             if (1 & (legal >> i)){
                 calc_flip(&flip, &b, i);
                 b.move_copy(&flip, &nb);
-                res[i] = book.get(&nb);
-                if (res[i] == -INF){
-                    val_future[i] = async(launch::async, tree_search_noid, nb, depth - 1, use_mpc, mpct);
-                    if (!is_mid_search && !use_mpc)
-                        info[i] = SEARCH_FINAL;
-                    else
-                        info[i] = level;
-                } else{
-                    if (max_value < (double)res[i]){
-                        max_value = (double)res[i];
-                        best_moves_set.clear();
-                        best_moves_set.emplace(i);
-                    } else if (max_value == (double)res[i])
-                        best_moves_set.emplace(i);
-                    info[i] = SEARCH_BOOK;
-                }
+                if (max_value < (double)res[i]){
+                    max_value = (double)res[i];
+                    best_moves_set.clear();
+                    best_moves_set.emplace(i);
+                } else if (max_value == (double)res[i])
+                    best_moves_set.emplace(i);
+                info[i] = SEARCH_BOOK;
             }
         }
         for (int i = 0; i < HW2; ++i){
@@ -261,12 +250,7 @@ bool ai_hint(Board b, int level, int max_level, int res[], int info[], bool best
             if (1 & (legal >> i)){
                 calc_flip(&flip, &b, i);
                 b.move_copy(&flip, &nb);
-                res[i] = book.get(&nb);
-                if (res[i] == -INF){
-                    res[i] = value_to_score_int(-mid_evaluate(&nb));
-                    info[i] = level;
-                } else
-                    info[i] = SEARCH_BOOK;
+                info[i] = SEARCH_BOOK;
                 if (max_value < (double)res[i]){
                     max_value = (double)res[i];
                     best_moves_set.clear();
@@ -281,24 +265,4 @@ bool ai_hint(Board b, int level, int max_level, int res[], int info[], bool best
             best_moves[i] = (best_moves_set.find(i) != best_moves_set.end());
     }
     return true;
-}
-
-int ai_value(Board b, int level){
-    int res = book.get(&b);
-    if (res != -INF){
-        cerr << "BOOK " << res << endl;
-        return -res;
-    } else if (level == 0){
-        res = mid_evaluate(&b);
-        cerr << "level 0 " << res << endl;
-        return res;
-    } else{
-        int depth;
-        bool use_mpc, is_mid_search;
-        double mpct;
-        get_level(level, b.n - 4, &is_mid_search, &depth, &use_mpc, &mpct);
-        cerr << "level status " << level << " " << b.n - 4 << " " << depth << " " << use_mpc << " " << mpct << endl;
-        return tree_search(b, depth, use_mpc, mpct, true).value;
-    }
-    return res;
 }

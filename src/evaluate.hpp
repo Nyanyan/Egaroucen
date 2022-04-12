@@ -8,32 +8,14 @@
 
 using namespace std;
 
-#define N_PATTERNS 16
-#define MAX_SURROUND 100
-#define MAX_CANPUT 50
-#define MAX_STABILITY 65
-#define MAX_STONE_NUM 65
+#define N_PATTERNS 14
 #define N_CANPUT_PATTERNS 4
 #define MAX_EVALUATE_IDX 59049
 
 #define STEP 256
 #define STEP_2 128
 
-#if EVALUATION_STEP_WIDTH_MODE == 0
-    #define SCORE_MAX 64
-#elif EVALUATION_STEP_WIDTH_MODE == 1
-    #define SCORE_MAX 32
-#elif EVALUATION_STEP_WIDTH_MODE == 2
-    #define SCORE_MAX 128
-#elif EVALUATION_STEP_WIDTH_MODE == 3
-    #define SCORE_MAX 256
-#elif EVALUATION_STEP_WIDTH_MODE == 4
-    #define SCORE_MAX 512
-#elif EVALUATION_STEP_WIDTH_MODE == 5
-    #define SCORE_MAX 1024
-#elif EVALUATION_STEP_WIDTH_MODE == 6
-    #define SCORE_MAX 2048
-#endif
+#define SCORE_MAX 64
 
 #define P31 3
 #define P32 9
@@ -66,14 +48,13 @@ using namespace std;
 #define P47 16384
 #define P48 65536
 
+#define N_DENSE0 16
+#define N_DENSE1 8
+
 constexpr uint_fast16_t pow3[11] = {1, P31, P32, P33, P34, P35, P36, P37, P38, P39, P310};
 uint64_t stability_edge_arr[N_8BIT][N_8BIT][2];
 int16_t pattern_arr[N_PHASES][N_PATTERNS][MAX_EVALUATE_IDX];
-int16_t eval_sur0_sur1_arr[N_PHASES][MAX_SURROUND][MAX_SURROUND];
-int16_t eval_canput0_canput1_arr[N_PHASES][MAX_CANPUT][MAX_CANPUT];
-int16_t eval_stab0_stab1_arr[N_PHASES][MAX_STABILITY][MAX_STABILITY];
-int16_t eval_num0_num1_arr[N_PHASES][MAX_STONE_NUM][MAX_STONE_NUM];
-int16_t eval_canput_pattern[N_PHASES][N_CANPUT_PATTERNS][P48];
+int16_t canput_pattern_arr[N_PHASES][N_CANPUT_PATTERNS][P48];
 
 string create_line(int b, int w){
     string res = "";
@@ -138,54 +119,135 @@ inline void init_evaluation_base() {
     }
 }
 
-inline bool init_evaluation_calc(){
-    FILE* fp;
-    #ifdef _WIN64
-        if (fopen_s(&fp, "resources/eval.egev", "rb") != 0){
-            cerr << "can't open eval.egev" << endl;
-            return false;
-        }
-    #else
-        fp = fopen("resources/eval.egev", "rb");
-        if (fp == NULL){
-            cerr << "can't open eval.egev" << endl;
-            return false;
-        }
-    #endif
-    int phase_idx, pattern_idx;
-    constexpr int pattern_sizes[N_PATTERNS] = {8, 8, 8, 5, 6, 7, 8, 10, 10, 10, 10, 9, 10, 10, 10, 10};
-    for (phase_idx = 0; phase_idx < N_PHASES; ++phase_idx){
-        for (pattern_idx = 0; pattern_idx < N_PATTERNS; ++pattern_idx){
-            if (fread(pattern_arr[phase_idx][pattern_idx], 2, pow3[pattern_sizes[pattern_idx]], fp) < pow3[pattern_sizes[pattern_idx]]){
-                cerr << "eval.egev broken" << endl;
-                fclose(fp);
-                return false;
+inline double leaky_relu(double x){
+    return max(0.01 * x, x);
+}
+
+inline double predict(int pattern_size, double in_arr[], double dense0[N_DENSE0][20], double bias0[N_DENSE0], double dense1[N_DENSE1][N_DENSE0], double bias1[N_DENSE1], double dense2[N_DENSE1], double bias2){
+    double hidden0[16], hidden1;
+    int i, j;
+    for (i = 0; i < N_DENSE0; ++i){
+        hidden0[i] = bias0[i];
+        for (j = 0; j < pattern_size * 2; ++j)
+            hidden0[i] += in_arr[j] * dense0[i][j];
+        hidden0[i] = leaky_relu(hidden0[i]);
+    }
+    double res = bias2;
+    for (i = 0; i < N_DENSE1; ++i){
+        hidden1 = bias1[i];
+        for (j = 0; j < N_DENSE0; ++j)
+            hidden1 += hidden0[j] * dense1[i][j];
+        hidden1 = leaky_relu(hidden1);
+        res += hidden1 * dense2[i];
+    }
+    res = leaky_relu(res);
+    return res;
+}
+
+inline void predict_all_pattern(int phase_idx, int evaluate_idx, int pattern_size, double dense0[N_DENSE0][20], double bias0[N_DENSE0], double dense1[N_DENSE1][N_DENSE0], double bias1[N_DENSE1], double dense2[N_DENSE1], double bias2){
+    int digit, idx, i;
+    double arr[20], tmp_pattern_arr[MAX_EVALUATE_IDX];
+    for (idx = 0; idx < pow3[pattern_size]; ++idx){
+        for (i = 0; i < pattern_size; ++i){
+            digit = (idx / pow3[pattern_size - 1 - i]) % 3;
+            if (digit == 0){
+                arr[i] = 1.0;
+                arr[pattern_size + i] = 0.0;
+            } else if (digit == 1){
+                arr[i] = 0.0;
+                arr[pattern_size + i] = 1.0;
+            } else{
+                arr[i] = 0.0;
+                arr[pattern_size + i] = 0.0;
             }
         }
-        if (fread(eval_sur0_sur1_arr[phase_idx], 2, MAX_SURROUND * MAX_SURROUND, fp) < MAX_SURROUND * MAX_SURROUND){
-            cerr << "eval.egev broken" << endl;
-            fclose(fp);
-            return false;
+        pattern_arr[phase_idx][evaluate_idx][idx] = predict(pattern_size, arr, dense0, bias0, dense1, bias1, dense2, bias2);
+    }
+}
+
+inline void predict_all_canput_pattern(int phase_idx, int evaluate_idx, double dense0[N_DENSE0][20], double bias0[N_DENSE0], double dense1[N_DENSE1][N_DENSE0], double bias1[N_DENSE1], double dense2[N_DENSE1], double bias2){
+    int digit, idx, i;
+    double arr[16], tmp_pattern_arr[MAX_EVALUATE_IDX];
+    for (idx = 0; idx < 65536; ++idx){
+        for (i = 0; i < 16; ++i)
+            arr[i] = (double)((idx >> i) & 1);
+        canput_pattern_arr[phase_idx][evaluate_idx][idx] = predict(8, arr, dense0, bias0, dense1, bias1, dense2, bias2);
+    }
+}
+
+inline bool init_evaluation_calc(){
+    ifstream fp("evaluation/param/param.txt");
+    if (fp.fail()){
+        cerr << "evaluation file not exist" << endl;
+        exit(1);
+    }
+    int phase_idx, pattern_idx, i, j;
+    constexpr int pattern_sizes[N_PATTERNS] = {8, 8, 8, 5, 6, 7, 8, 10, 10, 10, 10, 9, 10, 10};
+    string line;
+    double dense0[N_DENSE0][20];
+    double bias0[N_DENSE0];
+    double dense1[N_DENSE1][N_DENSE0];
+    double bias1[N_DENSE1];
+    double dense2[N_DENSE1];
+    double bias2;
+    for (phase_idx = 0; phase_idx < N_PHASES; ++phase_idx){
+        for (pattern_idx = 0; pattern_idx < N_PATTERNS; ++pattern_idx){
+            for (i = 0; i < N_DENSE0; ++i){
+                for (j = 0; j < pattern_sizes[pattern_idx] * 2; ++j){
+                    getline(fp, line);
+                    dense0[i][j] = stof(line);
+                }
+            }
+            for (i = 0; i < N_DENSE0; ++i){
+                getline(fp, line);
+                bias0[i] = stof(line);
+            }
+            for (i = 0; i < N_DENSE1; ++i){
+                for (j = 0; j < N_DENSE0; ++j){
+                    getline(fp, line);
+                    dense1[i][j] = stof(line);
+                }
+            }
+            for (i = 0; i < N_DENSE1; ++i){
+                getline(fp, line);
+                bias1[i] = stof(line);
+            }
+            for (i = 0; i < N_DENSE1; ++i){
+                getline(fp, line);
+                dense2[i] = stof(line);
+            }
+            getline(fp, line);
+            bias2 = stof(line);
+            predict_all_pattern(phase_idx, pattern_idx, pattern_sizes[pattern_idx], dense0, bias0, dense1, bias1, dense2, bias2);
         }
-        if (fread(eval_canput0_canput1_arr[phase_idx], 2, MAX_CANPUT * MAX_CANPUT, fp) < MAX_CANPUT * MAX_CANPUT){
-            cerr << "eval.egev broken" << endl;
-            fclose(fp);
-            return false;
-        }
-        if (fread(eval_stab0_stab1_arr[phase_idx], 2, MAX_STABILITY * MAX_STABILITY, fp) < MAX_STABILITY * MAX_STABILITY){
-            cerr << "eval.egev broken" << endl;
-            fclose(fp);
-            return false;
-        }
-        if (fread(eval_num0_num1_arr[phase_idx], 2, MAX_STONE_NUM * MAX_STONE_NUM, fp) < MAX_STONE_NUM * MAX_STONE_NUM){
-            cerr << "eval.egev broken" << endl;
-            fclose(fp);
-            return false;
-        }
-        if (fread(eval_canput_pattern[phase_idx], 2, N_CANPUT_PATTERNS * P48, fp) < N_CANPUT_PATTERNS * P48){
-            cerr << "eval.egev broken" << endl;
-            fclose(fp);
-            return false;
+        for (pattern_idx = 0; pattern_idx < N_CANPUT_PATTERNS; ++pattern_idx){
+            for (i = 0; i < N_DENSE0; ++i){
+                for (j = 0; j < 16; ++j){
+                    getline(fp, line);
+                    dense0[i][j] = stof(line);
+                }
+            }
+            for (i = 0; i < N_DENSE0; ++i){
+                getline(fp, line);
+                bias0[i] = stof(line);
+            }
+            for (i = 0; i < N_DENSE1; ++i){
+                for (j = 0; j < N_DENSE0; ++j){
+                    getline(fp, line);
+                    dense1[i][j] = stof(line);
+                }
+            }
+            for (i = 0; i < N_DENSE1; ++i){
+                getline(fp, line);
+                bias1[i] = stof(line);
+            }
+            for (i = 0; i < N_DENSE1; ++i){
+                getline(fp, line);
+                dense2[i] = stof(line);
+            }
+            getline(fp, line);
+            bias2 = stof(line);
+            predict_all_canput_pattern(phase_idx, pattern_idx, dense0, bias0, dense1, bias1, dense2, bias2);
         }
     }
     cerr << "evaluation function initialized" << endl;
@@ -196,102 +258,6 @@ bool evaluate_init(){
     init_evaluation_base();
     return init_evaluation_calc();
 }
-
-inline uint64_t calc_surround_part(const uint64_t player, const int dr){
-    return (player << dr | player >> dr);
-}
-
-inline int calc_surround(const uint64_t player, const uint64_t empties){
-    return pop_count_ull(empties & (
-        calc_surround_part(player & 0b0111111001111110011111100111111001111110011111100111111001111110ULL, 1) | 
-        calc_surround_part(player & 0b0000000011111111111111111111111111111111111111111111111100000000ULL, HW) | 
-        calc_surround_part(player & 0b0000000001111110011111100111111001111110011111100111111000000000ULL, HW_M1) | 
-        calc_surround_part(player & 0b0000000001111110011111100111111001111110011111100111111000000000ULL, HW_P1)
-    ));
-}
-
-inline void calc_stability(Board *b, int *stab0, int *stab1){
-    uint64_t full_h, full_v, full_d7, full_d9;
-    uint64_t edge_stability = 0, player_stability = 0, opponent_stability = 0, n_stability;
-    uint64_t h, v, d7, d9;
-    const uint64_t player_mask = b->player & 0b0000000001111110011111100111111001111110011111100111111000000000ULL;
-    const uint64_t opponent_mask = b->opponent & 0b0000000001111110011111100111111001111110011111100111111000000000ULL;
-    uint8_t pl, op;
-    pl = b->player & 0b11111111U;
-    op = b->opponent & 0b11111111U;
-    edge_stability |= stability_edge_arr[pl][op][0] << 56;
-    pl = (b->player >> 56) & 0b11111111U;
-    op = (b->opponent >> 56) & 0b11111111U;
-    edge_stability |= stability_edge_arr[pl][op][0];
-    pl = join_v_line(b->player, 0);
-    op = join_v_line(b->opponent, 0);
-    edge_stability |= stability_edge_arr[pl][op][1] << 7;
-    pl = join_v_line(b->player, 7);
-    op = join_v_line(b->opponent, 7);
-    edge_stability |= stability_edge_arr[pl][op][1];
-    b->full_stability(&full_h, &full_v, &full_d7, &full_d9);
-
-    n_stability = (edge_stability & b->player) | (full_h & full_v & full_d7 & full_d9 & player_mask);
-    while (n_stability & ~player_stability){
-        player_stability |= n_stability;
-        h = (player_stability >> 1) | (player_stability << 1) | full_h;
-        v = (player_stability >> HW) | (player_stability << HW) | full_v;
-        d7 = (player_stability >> HW_M1) | (player_stability << HW_M1) | full_d7;
-        d9 = (player_stability >> HW_P1) | (player_stability << HW_P1) | full_d9;
-        n_stability = h & v & d7 & d9 & player_mask;
-    }
-
-    n_stability = (edge_stability & b->opponent) | (full_h & full_v & full_d7 & full_d9 & opponent_mask);
-    while (n_stability & ~opponent_stability){
-        opponent_stability |= n_stability;
-        h = (opponent_stability >> 1) | (opponent_stability << 1) | full_h;
-        v = (opponent_stability >> HW) | (opponent_stability << HW) | full_v;
-        d7 = (opponent_stability >> HW_M1) | (opponent_stability << HW_M1) | full_d7;
-        d9 = (opponent_stability >> HW_P1) | (opponent_stability << HW_P1) | full_d9;
-        n_stability = h & v & d7 & d9 & opponent_mask;
-    }
-
-    *stab0 = pop_count_ull(player_stability);
-    *stab1 = pop_count_ull(opponent_stability);
-}
-
-inline void calc_stability_edge(Board *b, int *stab0, int *stab1){
-    uint64_t edge_stability = 0;
-    uint8_t pl, op;
-    pl = b->player & 0b11111111U;
-    op = b->opponent & 0b11111111U;
-    edge_stability |= stability_edge_arr[pl][op][0] << 56;
-    pl = (b->player >> 56) & 0b11111111U;
-    op = (b->opponent >> 56) & 0b11111111U;
-    edge_stability |= stability_edge_arr[pl][op][0];
-    pl = join_v_line(b->player, 0);
-    op = join_v_line(b->opponent, 0);
-    edge_stability |= stability_edge_arr[pl][op][1] << 7;
-    pl = join_v_line(b->player, 7);
-    op = join_v_line(b->opponent, 7);
-    edge_stability |= stability_edge_arr[pl][op][1];
-    *stab0 = pop_count_ull(edge_stability & b->player);
-    *stab1 = pop_count_ull(edge_stability & b->opponent);
-}
-
-inline int calc_stability_edge_player(uint64_t player, uint64_t opponent){
-    uint64_t edge_stability = 0;
-    uint8_t pl, op;
-    pl = player & 0b11111111U;
-    op = opponent & 0b11111111U;
-    edge_stability |= stability_edge_arr[pl][op][0] << 56;
-    pl = (player >> 56) & 0b11111111U;
-    op = (opponent >> 56) & 0b11111111U;
-    edge_stability |= stability_edge_arr[pl][op][0];
-    pl = join_v_line(player, 0);
-    op = join_v_line(opponent, 0);
-    edge_stability |= stability_edge_arr[pl][op][1] << 7;
-    pl = join_v_line(player, 7);
-    op = join_v_line(opponent, 7);
-    edge_stability |= stability_edge_arr[pl][op][1];
-    return pop_count_ull(edge_stability & player);
-}
-
 
 inline int pick_pattern(const int phase_idx, const int pattern_idx, const uint_fast8_t b_arr[], const int p0, const int p1, const int p2, const int p3, const int p4){
     return pattern_arr[phase_idx][pattern_idx][b_arr[p0] * P34 + b_arr[p1] * P33 + b_arr[p2] * P32 + b_arr[p3] * P31 + b_arr[p4]];
@@ -334,9 +300,7 @@ inline int calc_pattern(const int phase_idx, Board *b){
         pick_pattern(phase_idx, 10, b_arr, 0, 9, 18, 27, 1, 10, 19, 8, 17, 26) + pick_pattern(phase_idx, 10, b_arr, 7, 14, 21, 28, 6, 13, 20, 15, 22, 29) + pick_pattern(phase_idx, 10, b_arr, 56, 49, 42, 35, 57, 50, 43, 48, 41, 34) + pick_pattern(phase_idx, 10, b_arr, 63, 54, 45, 36, 62, 53, 44, 55, 46, 37) + 
         pick_pattern(phase_idx, 11, b_arr, 0, 1, 2, 8, 9, 10, 16, 17, 18) + pick_pattern(phase_idx, 11, b_arr, 7, 6, 5, 15, 14, 13, 23, 22, 21) + pick_pattern(phase_idx, 11, b_arr, 56, 57, 58, 48, 49, 50, 40, 41, 42) + pick_pattern(phase_idx, 11, b_arr, 63, 62, 61, 55, 54, 53, 47, 46, 45) + 
         pick_pattern(phase_idx, 12, b_arr, 10, 0, 1, 2, 3, 4, 5, 6, 7, 13) + pick_pattern(phase_idx, 12, b_arr, 17, 0, 8, 16, 24, 32, 40, 48, 56, 41) + pick_pattern(phase_idx, 12, b_arr, 50, 56, 57, 58, 59, 60, 61, 62, 63, 53) + pick_pattern(phase_idx, 12, b_arr, 46, 63, 55, 47, 39, 31, 23, 15, 7, 22) + 
-        pick_pattern(phase_idx, 13, b_arr, 0, 1, 2, 3, 4, 8, 9, 16, 24, 32) + pick_pattern(phase_idx, 13, b_arr, 7, 6, 5, 4, 3, 15, 14, 23, 31, 39) + pick_pattern(phase_idx, 13, b_arr, 63, 62, 61, 60, 59, 55, 54, 47, 39, 31) + pick_pattern(phase_idx, 13, b_arr, 56, 57, 58, 59, 60, 48, 49, 40, 32, 24) + 
-        pick_pattern(phase_idx, 14, b_arr, 0, 1, 8, 9, 10, 11, 17, 18, 25, 27) + pick_pattern(phase_idx, 14, b_arr, 7, 6, 15, 14, 13, 12, 22, 21, 30, 28) + pick_pattern(phase_idx, 14, b_arr, 56, 57, 48, 49, 50, 51, 41, 42, 33, 35) + pick_pattern(phase_idx, 14, b_arr, 63, 62, 55, 54, 53, 52, 46, 45, 38, 36) + 
-        pick_pattern(phase_idx, 15, b_arr, 0, 1, 8, 9, 10, 11, 12, 17, 25, 33) + pick_pattern(phase_idx, 15, b_arr, 7, 6, 15, 14, 13, 12, 11, 22, 30, 38) + pick_pattern(phase_idx, 15, b_arr, 56, 57, 48, 49, 50, 51, 52, 41, 33, 25) + pick_pattern(phase_idx, 15, b_arr, 63, 62, 55, 54, 53, 52, 51, 46, 38, 30);
+        pick_pattern(phase_idx, 13, b_arr, 0, 1, 2, 3, 4, 8, 9, 16, 24, 32) + pick_pattern(phase_idx, 13, b_arr, 7, 6, 5, 4, 3, 15, 14, 23, 31, 39) + pick_pattern(phase_idx, 13, b_arr, 63, 62, 61, 60, 59, 55, 54, 47, 39, 31) + pick_pattern(phase_idx, 13, b_arr, 56, 57, 58, 59, 60, 48, 49, 40, 32, 24);
 }
 
 inline int create_canput_line_h(uint64_t b, uint64_t w, int t){
@@ -349,26 +313,26 @@ inline int create_canput_line_v(uint64_t b, uint64_t w, int t){
 
 inline int calc_canput_pattern(const int phase_idx, Board *b, const uint64_t player_mobility, const uint64_t opponent_mobility){
     return 
-        eval_canput_pattern[phase_idx][0][create_canput_line_h(player_mobility, opponent_mobility, 0)] + 
-        eval_canput_pattern[phase_idx][0][create_canput_line_h(player_mobility, opponent_mobility, 7)] + 
-        eval_canput_pattern[phase_idx][0][create_canput_line_v(player_mobility, opponent_mobility, 0)] + 
-        eval_canput_pattern[phase_idx][0][create_canput_line_v(player_mobility, opponent_mobility, 7)] + 
-        eval_canput_pattern[phase_idx][1][create_canput_line_h(player_mobility, opponent_mobility, 1)] + 
-        eval_canput_pattern[phase_idx][1][create_canput_line_h(player_mobility, opponent_mobility, 6)] + 
-        eval_canput_pattern[phase_idx][1][create_canput_line_v(player_mobility, opponent_mobility, 1)] + 
-        eval_canput_pattern[phase_idx][1][create_canput_line_v(player_mobility, opponent_mobility, 6)] + 
-        eval_canput_pattern[phase_idx][2][create_canput_line_h(player_mobility, opponent_mobility, 2)] + 
-        eval_canput_pattern[phase_idx][2][create_canput_line_h(player_mobility, opponent_mobility, 5)] + 
-        eval_canput_pattern[phase_idx][2][create_canput_line_v(player_mobility, opponent_mobility, 2)] + 
-        eval_canput_pattern[phase_idx][2][create_canput_line_v(player_mobility, opponent_mobility, 5)] + 
-        eval_canput_pattern[phase_idx][3][create_canput_line_h(player_mobility, opponent_mobility, 3)] + 
-        eval_canput_pattern[phase_idx][3][create_canput_line_h(player_mobility, opponent_mobility, 4)] + 
-        eval_canput_pattern[phase_idx][3][create_canput_line_v(player_mobility, opponent_mobility, 3)] + 
-        eval_canput_pattern[phase_idx][3][create_canput_line_v(player_mobility, opponent_mobility, 4)];
+        canput_pattern_arr[phase_idx][0][create_canput_line_h(player_mobility, opponent_mobility, 0)] + 
+        canput_pattern_arr[phase_idx][0][create_canput_line_h(player_mobility, opponent_mobility, 7)] + 
+        canput_pattern_arr[phase_idx][0][create_canput_line_v(player_mobility, opponent_mobility, 0)] + 
+        canput_pattern_arr[phase_idx][0][create_canput_line_v(player_mobility, opponent_mobility, 7)] + 
+        canput_pattern_arr[phase_idx][1][create_canput_line_h(player_mobility, opponent_mobility, 1)] + 
+        canput_pattern_arr[phase_idx][1][create_canput_line_h(player_mobility, opponent_mobility, 6)] + 
+        canput_pattern_arr[phase_idx][1][create_canput_line_v(player_mobility, opponent_mobility, 1)] + 
+        canput_pattern_arr[phase_idx][1][create_canput_line_v(player_mobility, opponent_mobility, 6)] + 
+        canput_pattern_arr[phase_idx][2][create_canput_line_h(player_mobility, opponent_mobility, 2)] + 
+        canput_pattern_arr[phase_idx][2][create_canput_line_h(player_mobility, opponent_mobility, 5)] + 
+        canput_pattern_arr[phase_idx][2][create_canput_line_v(player_mobility, opponent_mobility, 2)] + 
+        canput_pattern_arr[phase_idx][2][create_canput_line_v(player_mobility, opponent_mobility, 5)] + 
+        canput_pattern_arr[phase_idx][3][create_canput_line_h(player_mobility, opponent_mobility, 3)] + 
+        canput_pattern_arr[phase_idx][3][create_canput_line_h(player_mobility, opponent_mobility, 4)] + 
+        canput_pattern_arr[phase_idx][3][create_canput_line_v(player_mobility, opponent_mobility, 3)] + 
+        canput_pattern_arr[phase_idx][3][create_canput_line_v(player_mobility, opponent_mobility, 4)];
 }
 
 inline int end_evaluate(Board *b){
-    int res = b->score_player();
+    int res = -b->score_player();
     return score_to_value(res);
 }
 
@@ -377,71 +341,14 @@ inline int mid_evaluate(Board *b){
     uint64_t player_mobility, opponent_mobility, empties;
     player_mobility = calc_legal(b->player, b->opponent);
     opponent_mobility = calc_legal(b->opponent, b->player);
-    canput0 = min(MAX_CANPUT - 1, pop_count_ull(player_mobility));
-    canput1 = min(MAX_CANPUT - 1, pop_count_ull(opponent_mobility));
-    if (canput0 == 0 && canput1 == 0)
+    if (player_mobility == 0ULL && opponent_mobility == 0ULL)
         return end_evaluate(b);
     phase_idx = b->phase();
-    empties = ~(b->player | b->opponent);
-    sur0 = min(MAX_SURROUND - 1, calc_surround(b->player, empties));
-    sur1 = min(MAX_SURROUND - 1, calc_surround(b->opponent, empties));
-    calc_stability(b, &stab0, &stab1);
-    num0 = pop_count_ull(b->player);
-    num1 = pop_count_ull(b->opponent);
-    //cerr << calc_pattern(phase_idx, b) << " " << eval_sur0_sur1_arr[phase_idx][sur0][sur1] << " " << eval_canput0_canput1_arr[phase_idx][canput0][canput1] << " "
-    //    << eval_stab0_stab1_arr[phase_idx][stab0][stab1] << " " << eval_num0_num1_arr[phase_idx][num0][num1] << " " << calc_canput_pattern(phase_idx, b, player_mobility, opponent_mobility) << endl;
-    int res = calc_pattern(phase_idx, b) + 
-        eval_sur0_sur1_arr[phase_idx][sur0][sur1] + 
-        eval_canput0_canput1_arr[phase_idx][canput0][canput1] + 
-        eval_stab0_stab1_arr[phase_idx][stab0][stab1] + 
-        eval_num0_num1_arr[phase_idx][num0][num1] + 
-        calc_canput_pattern(phase_idx, b, player_mobility, opponent_mobility);
-    //return score_modification(phase_idx, res);
-    //cerr << res << endl;
-    #if EVALUATION_STEP_WIDTH_MODE == 0
-        if (res > 0)
-            res += STEP_2;
-        else if (res < 0)
-            res -= STEP_2;
-        res /= STEP;
-    #elif EVALUATION_STEP_WIDTH_MODE == 1
-        if (res > 0)
-            res += STEP;
-        else if (res < 0)
-            res -= STEP;
-        res /= STEP * 2;
-    #elif EVALUATION_STEP_WIDTH_MODE == 2
-        if (res > 0)
-            res += STEP / 4;
-        else if (res < 0)
-            res -= STEP / 4;
-        res /= STEP_2;
-    
-    #elif EVALUATION_STEP_WIDTH_MODE == 3
-        if (res > 0)
-            res += STEP / 8;
-        else if (res < 0)
-            res -= STEP / 8;
-        res /= STEP / 4;
-    #elif EVALUATION_STEP_WIDTH_MODE == 4
-        if (res > 0)
-            res += STEP / 16;
-        else if (res < 0)
-            res -= STEP / 16;
-        res /= STEP / 8;
-    #elif EVALUATION_STEP_WIDTH_MODE == 5
-        if (res > 0)
-            res += STEP / 32;
-        else if (res < 0)
-            res -= STEP / 32;
-        res /= STEP / 16;
-    #elif EVALUATION_STEP_WIDTH_MODE == 6
-        if (res > 0)
-            res += STEP / 64;
-        else if (res < 0)
-            res -= STEP / 64;
-        res /= STEP / 32;
-    #endif
-    //cerr << res << " " << value_to_score_double(res) << endl;
+    int res = calc_pattern(phase_idx, b) + calc_canput_pattern(phase_idx, b, player_mobility, opponent_mobility);
+    if (res > 0)
+        res += STEP_2;
+    else if (res < 0)
+        res -= STEP_2;
+    res /= STEP;
     return max(-SCORE_MAX, min(SCORE_MAX, res));
 }

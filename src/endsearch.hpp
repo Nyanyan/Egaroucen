@@ -491,7 +491,7 @@ int nega_alpha_end(Search *search, int alpha, int beta, bool skipped, uint64_t l
         int idx = 0;
         for (uint_fast8_t cell = first_bit(&legal); legal; cell = next_bit(&legal))
             calc_flip(&move_list[idx++], &search->board, cell);
-        move_ordering_fast_first(search, move_list);
+        move_ordering(search, move_list, HW2 - search->board.n, alpha, beta, true);
         for (const Flip &flip: move_list){
             search->board.move(&flip);
                 g = -nega_alpha_end(search, -beta, -alpha, false, flip.n_legal, searching);

@@ -24,12 +24,10 @@ Board input_board(){
         }
     }
     res.p = player;
-    res.parity = 0;
     res.n = HW2;
     uint64_t empties = ~(res.player | res.opponent);
     for (int i = 0; i < HW2; ++i){
         if (1 & (empties >> i)){
-            res.parity ^= cell_div4[i];
             --res.n;
         }
     }

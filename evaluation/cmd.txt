@@ -1,0 +1,5 @@
+python output_model.py 20_30.h5 1.txt
+python output_model.py 30_40.h5 2.txt
+python output_model.py 40_50.h5 3.txt
+python output_model.py 50_60.h5 4.txt
+python join_model.py 1.txt 2.txt 3.txt 4.txt
