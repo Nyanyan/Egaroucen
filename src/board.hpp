@@ -21,7 +21,6 @@ class Board {
         uint64_t opponent;
         uint_fast8_t p;
         uint_fast8_t n;
-        uint_fast8_t parity;
 
     public:
         int operator == (Board a) {
@@ -34,7 +33,6 @@ class Board {
             res.opponent = opponent;
             res.p = p;
             res.n = n;
-            res.parity = parity;
             return res;
         }
 
@@ -43,7 +41,6 @@ class Board {
             res->opponent = opponent;
             res->p = p;
             res->n = n;
-            res->parity = parity;
         }
 
         inline uint32_t hash(){
@@ -135,7 +132,6 @@ class Board {
             swap(player, opponent);
             p = 1 - p;
             ++n;
-            parity ^= cell_div4[flip->pos];
         }
 
         inline void move_copy(const Flip *flip, Board *res) {
@@ -144,7 +140,6 @@ class Board {
             res->opponent ^= 1ULL << flip->pos;
             res->p = 1 - p;
             res->n = n + 1;
-            res->parity = parity ^ cell_div4[flip->pos];
         }
 
         inline Board move_copy(const Flip *flip) {
@@ -161,7 +156,6 @@ class Board {
         inline void undo(const Flip *flip){
             p = 1 - p;
             --n;
-            parity ^= cell_div4[flip->pos];
             swap(player, opponent);
             player ^= 1ULL << flip->pos;
             player ^= flip->flip;
@@ -207,17 +201,14 @@ class Board {
             player = 0;
             opponent = 0;
             n = HW2;
-            parity = 0;
             if (player_idx == BLACK){
                 for (i = 0; i < HW2; ++i) {
                     if (arr[HW2_M1 - i] == BLACK)
                         player |= 1ULL << i;
                     else if (arr[HW2_M1 - i] == WHITE)
                         opponent |= 1ULL << i;
-                    else{
+                    else
                         --n;
-                        parity ^= cell_div4[i];
-                    }
                 }
             } else{
                 for (i = 0; i < HW2; ++i) {
@@ -225,10 +216,8 @@ class Board {
                         opponent |= 1ULL << i;
                     else if (arr[HW2_M1 - i] == WHITE)
                         player |= 1ULL << i;
-                    else{
+                    else
                         --n;
-                        parity ^= cell_div4[i];
-                    }
                 }
             }
             p = player_idx;
@@ -240,12 +229,9 @@ class Board {
             player = pl;
             opponent = op;
             n = HW2;
-            parity = 0;
             for (int i = 0; i < HW2; ++i) {
-                if ((1 & (pl >> i)) == 0 && (1 & (op >> i)) == 0){
+                if ((1 & (pl >> i)) == 0 && (1 & (op >> i)) == 0)
                     --n;
-                    parity ^= cell_div4[i];
-                }
             }
             p = player;
         }
