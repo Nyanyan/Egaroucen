@@ -26,20 +26,14 @@ def get_layer_index(model, layer_name, not_found=None):
             return i
     return not_found
 
-def my_loss(y_true, y_pred):
-    return tf.keras.backend.square(y_true - y_pred) * (tf.keras.backend.exp(-tf.keras.backend.abs(10.0 * y_true)) + 1)
+model = load_model('learned_data/' + sys.argv[1])
 
-model = load_model('learned_data/' + sys.argv[1], custom_objects={'my_loss': my_loss})
-
-layer_names = ['line2', 'line3', 'line4', 'diagonal5', 'diagonal6', 'diagonal7', 'diagonal8', 'edge2X', 'triangle', 'edgeblock', 'cross']
+layer_names = [chr(ord('a') + i) for i in range(18)]
 names = []
 for name in layer_names:
     names.append(name + '_dense0')
     names.append(name + '_dense1')
     names.append(name + '_out')
-names.append('add_dense0')
-names.append('add_dense1')
-names.append('all_dense0')
 
 with open('learned_data/' + sys.argv[2], 'w') as f:
     for name in names:
@@ -51,16 +45,10 @@ with open('learned_data/' + sys.argv[2], 'w') as f:
             while True:
                 try:
                     print(model.layers[i].weights[j].shape)
-                    if len(model.layers[i].weights[j].shape) == 4:
-                        for ll in range(model.layers[i].weights[j].shape[3]):
-                            for kk in range(model.layers[i].weights[j].shape[2]):
-                                for jj in range(model.layers[i].weights[j].shape[1]):
-                                    for ii in range(model.layers[i].weights[j].shape[0]):
-                                        f.write('{:.14f}'.format(model.layers[i].weights[j].numpy()[ii][jj][kk][ll]) + '\n')
-                    elif len(model.layers[i].weights[j].shape) == 2:
-                        for ii in range(model.layers[i].weights[j].shape[0]):
-                            for jj in range(model.layers[i].weights[j].shape[1]):
-                                f.write('{:.14f}'.format(model.layers[i].weights[j].numpy()[ii][jj]) + '\n')
+                    if len(model.layers[i].weights[j].shape) == 2:
+                        for ii in range(model.layers[i].weights[j].shape[1]):
+                            for jj in range(model.layers[i].weights[j].shape[0]):
+                                f.write('{:.14f}'.format(model.layers[i].weights[j].numpy()[jj][ii]) + '\n')
                     elif len(model.layers[i].weights[j].shape) == 1:
                         for ii in range(model.layers[i].weights[j].shape[0]):
                             f.write('{:.14f}'.format(model.layers[i].weights[j].numpy()[ii]) + '\n')
