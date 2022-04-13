@@ -22,7 +22,7 @@ from copy import deepcopy
 
 inf = 10000000.0
 
-for stone_strt in [20, 30, 40, 50]:
+for stone_strt in [0, 10, 20, 30, 40, 50]:
     stone_end = stone_strt + 10
 
     min_n_stones = 4 + stone_strt

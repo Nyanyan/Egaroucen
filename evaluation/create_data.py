@@ -33,7 +33,7 @@ for num, file in enumerate(files):
             for i in range(0, len(record), 2):
                 exe.stdin.write(o.create_input_str().encode('utf-8'))
                 exe.stdin.flush()
-                data.append([o.player, exe.stdout.readline().decode().replace('\r', '').replace('\n', '') + '\n'])
+                data.append([o.player, sum(o.n_stones) - 4, exe.stdout.readline().decode().replace('\r', '').replace('\n', '') + '\n'])
                 notation = record[i:i + 2]
                 y, x = notation_to_coord(notation)
                 if not o.move(y, x):
@@ -45,10 +45,10 @@ for num, file in enumerate(files):
                 score += vac
             elif score < 0:
                 score -= vac
-            for player, datum in data:
+            for player, ply, datum in data:
                 if player == 0:
-                    f.write(str(player) + ' ' + str(-score) + ' ' + datum)
+                    f.write(str(ply) + ' ' + str(-score) + ' ' + datum)
                 else:
-                    f.write(str(player) + ' ' + str(score) + ' ' + datum)
+                    f.write(str(ply) + ' ' + str(score) + ' ' + datum)
 
 exe.kill()
