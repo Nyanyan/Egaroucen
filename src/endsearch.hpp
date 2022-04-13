@@ -346,11 +346,13 @@ inline void pick_vacant(Search *search, uint_fast8_t cells[]){
 int nega_alpha_end_fast(Search *search, int alpha, int beta, bool skipped){
     if (!global_searching)
         return SCORE_UNDEFINED;
+    /*
     if (search->board.n == 60){
         uint_fast8_t cells[4];
         pick_vacant(search, cells);
         return last4(search, alpha, beta, cells[0], cells[1], cells[2], cells[3], skipped);
     }
+    */
     ++search->n_nodes;
     #if USE_END_SC
         int stab_res = stability_cut(search, &alpha, &beta);
