@@ -22,7 +22,7 @@ legal_buttons = []
 
 app = tkinter.Tk()
 app.geometry('1000x700')
-app.title('Egaroucid5')
+app.title('Egaroucen')
 canvas = tkinter.Canvas(app, width=1000, height = 700)
 pixel_virtual = tkinter.PhotoImage(width=1, height=1)
 

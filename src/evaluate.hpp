@@ -393,8 +393,7 @@ inline void print_info_canput_pattern(Board *b, const uint64_t player_mobility, 
 }
 
 inline int end_evaluate(Board *b){
-    int res = -b->score_player();
-    return score_to_value(res);
+    return -b->score_player();
 }
 
 inline int mid_evaluate(Board *b){

@@ -80,7 +80,7 @@ inline int last1(Search *search, int alpha, int beta, int p0){
             score -= 2 * n_flip + 2;
     } else
         score += 2 * n_flip;
-    return score_to_value(score);
+    return -score;
 }
 
 /*
