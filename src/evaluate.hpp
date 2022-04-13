@@ -123,7 +123,7 @@ inline double leaky_relu(double x){
     return max(0.01 * x, x);
 }
 
-inline double predict(int pattern_size, double in_arr[], double dense0[N_DENSE0][20], double bias0[N_DENSE0], double dense1[N_DENSE1][N_DENSE0], double bias1[N_DENSE1], double dense2[N_DENSE1], double bias2){
+inline int predict(int pattern_size, double in_arr[], double dense0[N_DENSE0][20], double bias0[N_DENSE0], double dense1[N_DENSE1][N_DENSE0], double bias1[N_DENSE1], double dense2[N_DENSE1], double bias2){
     double hidden0[16], hidden1;
     int i, j;
     for (i = 0; i < N_DENSE0; ++i){
@@ -140,8 +140,7 @@ inline double predict(int pattern_size, double in_arr[], double dense0[N_DENSE0]
         hidden1 = leaky_relu(hidden1);
         res += hidden1 * dense2[i];
     }
-    res = leaky_relu(res);
-    return res;
+    return round(res * STEP);
 }
 
 inline void predict_all_pattern(int phase_idx, int evaluate_idx, int pattern_size, double dense0[N_DENSE0][20], double bias0[N_DENSE0], double dense1[N_DENSE1][N_DENSE0], double bias1[N_DENSE1], double dense2[N_DENSE1], double bias2){
@@ -176,7 +175,7 @@ inline void predict_all_canput_pattern(int phase_idx, int evaluate_idx, double d
 }
 
 inline bool init_evaluation_calc(){
-    ifstream fp("evaluation/param/param.txt");
+    ifstream fp("resources/param.txt");
     if (fp.fail()){
         cerr << "evaluation file not exist" << endl;
         exit(1);

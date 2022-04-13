@@ -17,8 +17,9 @@ int main(int argc, char *argv[]){
     Search_result result;
     while (true){
         board = input_board();
-        result = random_ai(board);
-        //result = ai(board, level);
+        board.print();
+        //result = random_ai(board);
+        result = ai(board, level);
         cout << result.value << " " << idx_to_coord(result.policy) << endl;
     }
 
