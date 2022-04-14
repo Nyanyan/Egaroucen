@@ -91,6 +91,8 @@ inline Search_result tree_search(Board board, int depth, bool use_mpc, double mp
                         beta = min(SCORE_MAX, score_to_value(value_to_score_double(g) + 1.0));
                     }
                 #endif
+                //bool searching = true;
+                //cerr << nega_alpha_end_fast(&search, -SCORE_MAX, SCORE_MAX, false) << endl;
                 result = first_nega_scout(&search, alpha, beta, depth, false, true);
                 g = result.first;
                 //cerr << alpha << " " << g << " " << beta << endl;

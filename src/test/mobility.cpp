@@ -31,7 +31,7 @@ uint64_t get_mobility(const uint64_t P, const uint64_t O){
     return _mm_cvtsi128_si64(M) & ~(P | O);
 }
 
-#define N_TESTCASES 10000
+#define N_TESTCASES 1000000
 
 uint64_t testcases[N_TESTCASES][2];
 uint64_t test_results[N_TESTCASES][2];

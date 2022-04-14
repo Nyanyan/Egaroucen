@@ -80,7 +80,7 @@ inline int last1(Search *search, int alpha, int beta, int p0){
             score -= 2 * n_flip + 2;
     } else
         score += 2 * n_flip;
-    return -score;
+    return score_to_value(-score);
 }
 
 /*
@@ -346,11 +346,13 @@ inline void pick_vacant(Search *search, uint_fast8_t cells[]){
 int nega_alpha_end_fast(Search *search, int alpha, int beta, bool skipped){
     if (!global_searching)
         return SCORE_UNDEFINED;
+    /*
     if (search->board.n == 60){
         uint_fast8_t cells[4];
         pick_vacant(search, cells);
         return last4(search, alpha, beta, cells[0], cells[1], cells[2], cells[3], skipped);
     }
+    */
     ++search->n_nodes;
     #if USE_END_SC
         int stab_res = stability_cut(search, &alpha, &beta);
@@ -368,67 +370,16 @@ int nega_alpha_end_fast(Search *search, int alpha, int beta, bool skipped){
         return v;
     }
     Flip flip;
-    #if USE_END_PO
-        if (0 < search->board.parity && search->board.parity < 15){
-            uint64_t legal_odd_mask = 0ULL;
-            if (search->board.parity & 1)
-                legal_odd_mask |= 0x000000000F0F0F0FULL;
-            if (search->board.parity & 2)
-                legal_odd_mask |= 0x00000000F0F0F0F0ULL;
-            if (search->board.parity & 4)
-                legal_odd_mask |= 0x0F0F0F0F00000000ULL;
-            if (search->board.parity & 8)
-                legal_odd_mask |= 0xF0F0F0F000000000ULL;
-            uint64_t legal_copy = legal & legal_odd_mask;
-            if (legal_copy){
-                for (uint_fast8_t cell = first_bit(&legal_copy); legal_copy; cell = next_bit(&legal_copy)){
-                    calc_flip(&flip, &search->board, cell);
-                    search->board.move(&flip);
-                        g = -nega_alpha_end_fast(search, -beta, -alpha, false);
-                    search->board.undo(&flip);
-                    alpha = max(alpha, g);
-                    if (beta <= alpha)
-                        return alpha;
-                    v = max(v, g);
-                }
-            }
-            legal_copy = legal & (~legal_odd_mask);
-            if (legal_copy){
-                for (uint_fast8_t cell = first_bit(&legal_copy); legal_copy; cell = next_bit(&legal_copy)){
-                    calc_flip(&flip, &search->board, cell);
-                    search->board.move(&flip);
-                        g = -nega_alpha_end_fast(search, -beta, -alpha, false);
-                    search->board.undo(&flip);
-                    alpha = max(alpha, g);
-                    if (beta <= alpha)
-                        return alpha;
-                    v = max(v, g);
-                }
-            }
-        } else{
-            for (uint_fast8_t cell = first_bit(&legal); legal; cell = next_bit(&legal)){
-                calc_flip(&flip, &search->board, cell);
-                search->board.move(&flip);
-                    g = -nega_alpha_end_fast(search, -beta, -alpha, false);
-                search->board.undo(&flip);
-                alpha = max(alpha, g);
-                if (beta <= alpha)
-                    return alpha;
-                v = max(v, g);
-            }
-        }
-    #else
-        for (uint_fast8_t cell = first_bit(&legal); legal; cell = next_bit(&legal)){
-            calc_flip(&flip, &search->board, cell);
-            search->board.move(&flip);
-                g = -nega_alpha_end_fast(search, -beta, -alpha, false);
-            search->board.undo(&flip);
-            alpha = max(alpha, g);
-            if (beta <= alpha)
-                return alpha;
-            v = max(v, g);
-        }
-    #endif
+    for (uint_fast8_t cell = first_bit(&legal); legal; cell = next_bit(&legal)){
+        calc_flip(&flip, &search->board, cell);
+        search->board.move(&flip);
+            g = -nega_alpha_end_fast(search, -beta, -alpha, false);
+        search->board.undo(&flip);
+        alpha = max(alpha, g);
+        if (beta <= alpha)
+            return alpha;
+        v = max(v, g);
+    }
     return v;
 }
 
