@@ -14,14 +14,7 @@
 #define MOVE_ORDERING_PHASE_DIV 10
 #define N_MOVE_ORDERING_PHASE 6
 
-#define W_BEST_MOVE 900000000
-
-#define W_WIPEOUT 1000000000
-
 #define MOVE_ORDERING_VALUE_OFFSET 14
-
-#define W_END_MOBILITY 64
-#define W_END_PARITY 14
 
 int nega_alpha_eval1(Search *search, int alpha, int beta, bool skipped);
 int nega_alpha(Search *search, int alpha, int beta, int depth, bool skipped);
@@ -38,30 +31,26 @@ bool cmp_move_ordering(Flip &a, Flip &b){
 }
 
 inline void move_evaluate(Search *search, Flip *flip, const int alpha, const int beta, const int depth){
-    if (flip->flip == search->board.opponent)
-        flip->value = W_WIPEOUT;
-    else{
-        search->board.move(flip);
-            switch(depth){
-                case 0:
-                    flip->value += (HW2 - value_to_score_int(mid_evaluate(&search->board)));
-                    break;
-                case 1:
-                    flip->value += (HW2 - value_to_score_int(nega_alpha_eval1(search, alpha, beta, false)));
-                    break;
-                default:
-                    if (depth <= MID_FAST_DEPTH)
-                        flip->value += (HW2 - value_to_score_int(nega_alpha(search, alpha, beta, depth, false)));
-                    else{
-                        bool use_mpc = search->use_mpc;
-                        search->use_mpc = false;
-                            flip->value += (HW2 - value_to_score_int(nega_alpha_ordering_nomemo(search, alpha, beta, depth, false, flip->n_legal)));
-                        search->use_mpc = use_mpc;
-                    }
-                    break;
-            }
-        search->board.undo(flip);
-    }
+    search->board.move(flip);
+        switch(depth){
+            case 0:
+                flip->value += (HW2 - value_to_score_int(mid_evaluate(&search->board)));
+                break;
+            case 1:
+                flip->value += (HW2 - value_to_score_int(nega_alpha_eval1(search, alpha, beta, false)));
+                break;
+            default:
+                if (depth <= MID_FAST_DEPTH)
+                    flip->value += (HW2 - value_to_score_int(nega_alpha(search, alpha, beta, depth, false)));
+                else{
+                    bool use_mpc = search->use_mpc;
+                    search->use_mpc = false;
+                        flip->value += (HW2 - value_to_score_int(nega_alpha_ordering_nomemo(search, alpha, beta, depth, false, flip->n_legal)));
+                    search->use_mpc = use_mpc;
+                }
+                break;
+        }
+    search->board.undo(flip);
 }
 
 inline void move_ordering(Search *search, vector<Flip> &move_list, int depth, int alpha, int beta, bool is_end_search){
