@@ -87,7 +87,7 @@ for ply_strt in reversed([10, 20, 30, 40, 50]):     ############################
 
     game_num = 2000
     test_ratio = 0.1
-    n_epochs = 20
+    n_epochs = 30
     
     all_data = []
     
