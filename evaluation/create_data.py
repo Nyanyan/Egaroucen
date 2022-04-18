@@ -15,10 +15,7 @@ def notation_to_coord(notation):
     x = ord(notation[0].lower()) - ord('a')
     return y, x
 
-directory = int(input('directory: '))
-directory_filled = digit(directory, 7)
-
-files = glob.glob('./self_play/' + directory_filled + '/*')
+files = glob.glob('./self_play/*')
 print(files)
 
 exe = subprocess.Popen('./../src/test/create_data.out'.split(), stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr=subprocess.DEVNULL)

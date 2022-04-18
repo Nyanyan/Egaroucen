@@ -1,5 +1,5 @@
 # Python othello lib
-# last updated: 2022/04/12 22:06
+# last updated: 2022/04/18 18:13
 
 hw = 8
 hw2 = 64
@@ -28,6 +28,7 @@ class othello:
 
     def get_legal(self):
         res = [[False for _ in range(hw)] for _ in range(hw)]
+        have_legal = False
         for y in range(hw):
             for x in range(hw):
                 if self.grid[y][x] != vacant:
