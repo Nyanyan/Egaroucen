@@ -86,10 +86,11 @@ for ply_strt in reversed([0, 10, 20, 30, 40, 50]):
 
     game_num = 2000
     test_ratio = 0.1
-    n_epochs = 10
+    n_epochs = 30
     
     all_data = []
-
+    
+    '''
     x = [None for _ in range(70)]
     ys = []
     names = [chr(ord('a') + i) for i in range(18)]
@@ -113,8 +114,9 @@ for ply_strt in reversed([0, 10, 20, 30, 40, 50]):
     y_all = Add(name='out')(ys)
 
     model = Model(inputs=x, outputs=y_all)
-
-    #model = load_model('learned_data/bef_' + str(ply_strt) + '_' + str(ply_end) + '.h5')
+    '''
+    
+    model = load_model('learned_data/bef_' + str(ply_strt) + '_' + str(ply_end) + '.h5')
 
     #model.summary()
     #plot_model(model, to_file='model.png', show_shapes=True)
@@ -177,7 +179,7 @@ for ply_strt in reversed([0, 10, 20, 30, 40, 50]):
     early_stop = EarlyStopping(monitor='val_loss', patience=5)
     model_checkpoint = ModelCheckpoint(filepath=os.path.join('learned_data/' + str(ply_strt) + '_' + str(ply_end), 'model_{epoch:02d}_{val_loss:.5f}_{val_mae:.5f}.h5'), monitor='val_loss', verbose=1)
     reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=2, min_lr=0.0001)
-    history = model.fit(train_data, train_labels, batch_size=256, epochs=n_epochs, validation_data=(test_data, test_labels), callbacks=[early_stop, model_checkpoint])
+    history = model.fit(train_data, train_labels, batch_size=256, epochs=n_epochs, validation_data=(test_data, test_labels), callbacks=[early_stop])
 
     now = datetime.datetime.today()
     print(str(now.year) + digit(now.month, 2) + digit(now.day, 2) + '_' + digit(now.hour, 2) + digit(now.minute, 2))
