@@ -10,7 +10,7 @@ rect_size = 60
 circle_offset = 3
 
 ai_player = int(input('AI moves (0: black 1: white): '))
-ai_exe = subprocess.Popen('./a.out 17'.split(), stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+ai_exe = subprocess.Popen('./a.out 15'.split(), stdin=subprocess.PIPE, stdout=subprocess.PIPE)
 #ai_exe.stdin.write((str(ai_player) + '\n').encode('utf-8'))
 #ai_exe.stdin.flush()
 record = ''
