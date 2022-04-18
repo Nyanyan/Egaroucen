@@ -106,7 +106,7 @@ int nega_alpha_ordering_nomemo(Search *search, int alpha, int beta, int depth, b
     }
     #if USE_MID_MPC
         if (search->use_mpc){
-            if (mpc(search, alpha, beta, depth, legal, false, &v))
+            if (mpc(search, alpha, beta, depth, false, &v))
                 return v;
         }
     #endif
@@ -171,7 +171,7 @@ int nega_alpha_ordering(Search *search, int alpha, int beta, int depth, bool ski
     }
     #if USE_MID_MPC
         if (search->use_mpc){
-            if (mpc(search, alpha, beta, depth, legal, is_end_search, &v))
+            if (mpc(search, alpha, beta, depth, is_end_search, &v))
                 return v;
         }
     #endif
@@ -306,7 +306,7 @@ int nega_scout(Search *search, int alpha, int beta, int depth, bool skipped, boo
     }
     #if USE_MID_MPC
         if (search->use_mpc){
-            if (mpc(search, alpha, beta, depth, legal, is_end_search, &v))
+            if (mpc(search, alpha, beta, depth, is_end_search, &v))
                 return v;
         }
     #endif

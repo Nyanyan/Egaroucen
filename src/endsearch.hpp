@@ -43,7 +43,7 @@ int nega_alpha_end_nomemo(Search *search, int alpha, int beta, int depth, bool s
     }
     #if USE_MID_MPC
         if (search->use_mpc){
-            if (mpc(search, alpha, beta, depth, legal, false, &v))
+            if (mpc(search, alpha, beta, depth, false, &v))
                 return v;
         }
     #endif
@@ -416,7 +416,7 @@ int nega_alpha_end(Search *search, int alpha, int beta, bool skipped, const bool
     }
     #if USE_END_MPC
         if (search->use_mpc){
-            if (mpc(search, alpha, beta, HW2 - search->board.n, legal, false, &v))
+            if (mpc(search, alpha, beta, HW2 - search->board.n, false, &v))
                 return v;
         }
     #endif
