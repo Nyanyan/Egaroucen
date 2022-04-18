@@ -82,7 +82,7 @@ same_pattern_num = [
 ]
 
 #for ply_strt in reversed([0, 10, 20, 30, 40, 50]):
-for ply_strt in reversed([10, 20, 30, 40, 50]):
+for ply_strt in reversed([10, 20, 30, 40, 50]):     ############################################
     ply_end = ply_strt + 10
 
     game_num = 2000
