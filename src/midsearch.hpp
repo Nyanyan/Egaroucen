@@ -83,7 +83,7 @@ int nega_alpha(Search *search, int alpha, int beta, int depth, bool skipped){
     return v;
 }
 
-int nega_alpha_ordering_nomemo(Search *search, int alpha, int beta, int depth, bool skipped, uint64_t legal){
+int nega_alpha_ordering_nomemo(Search *search, int alpha, int beta, int depth, bool skipped){
     if (!global_searching)
         return SCORE_UNDEFINED;
     if (depth <= MID_FAST_DEPTH)
@@ -94,14 +94,13 @@ int nega_alpha_ordering_nomemo(Search *search, int alpha, int beta, int depth, b
         if (stab_res != SCORE_UNDEFINED)
             return stab_res;
     #endif
-    if (legal == LEGAL_UNDEFINED)
-        legal = search->board.get_legal();
+    uint64_t legal = search->board.get_legal();
     int g, v = -INF;
     if (legal == 0ULL){
         if (skipped)
             return end_evaluate(&search->board);
         search->board.pass();
-            v = -nega_alpha_ordering_nomemo(search, -beta, -alpha, depth, true, LEGAL_UNDEFINED);
+            v = -nega_alpha_ordering_nomemo(search, -beta, -alpha, depth, true);
         search->board.pass();
         return v;
     }
@@ -120,7 +119,7 @@ int nega_alpha_ordering_nomemo(Search *search, int alpha, int beta, int depth, b
     int best_move = -1;
     for (const Flip &flip: move_list){
         search->board.move(&flip);
-            g = -nega_alpha_ordering_nomemo(search, -beta, -alpha, depth - 1, false, flip.n_legal);
+            g = -nega_alpha_ordering_nomemo(search, -beta, -alpha, depth - 1, false);
         search->board.undo(&flip);
         alpha = max(alpha, g);
         if (v < g){
@@ -134,11 +133,11 @@ int nega_alpha_ordering_nomemo(Search *search, int alpha, int beta, int depth, b
     return v;
 }
 
-int nega_alpha_ordering(Search *search, int alpha, int beta, int depth, bool skipped, uint64_t legal, bool is_end_search, const bool *searching){
+int nega_alpha_ordering(Search *search, int alpha, int beta, int depth, bool skipped, bool is_end_search, const bool *searching){
     if (!global_searching || !(*searching))
         return SCORE_UNDEFINED;
     if (is_end_search && depth <= MID_TO_END_DEPTH)
-        return nega_alpha_end(search, alpha, beta, skipped, legal, searching);
+        return nega_alpha_end(search, alpha, beta, skipped, searching);
     if (!is_end_search && depth <= MID_FAST_DEPTH)
         return nega_alpha(search, alpha, beta, depth, skipped);
     ++(search->n_nodes);
@@ -160,14 +159,13 @@ int nega_alpha_ordering(Search *search, int alpha, int beta, int depth, bool ski
         alpha = max(alpha, l);
         beta = min(beta, u);
     #endif
-    if (legal == LEGAL_UNDEFINED)
-        legal = search->board.get_legal();
+    uint64_t legal = search->board.get_legal();
     int g, v = -INF;
     if (legal == 0ULL){
         if (skipped)
             return end_evaluate(&search->board);
         search->board.pass();
-            v = -nega_alpha_ordering(search, -beta, -alpha, depth, true, LEGAL_UNDEFINED, is_end_search, searching);
+            v = -nega_alpha_ordering(search, -beta, -alpha, depth, true, is_end_search, searching);
         search->board.pass();
         return v;
     }
@@ -183,7 +181,7 @@ int nega_alpha_ordering(Search *search, int alpha, int beta, int depth, bool ski
         Flip flip;
         calc_flip(&flip, &search->board, best_move);
         search->board.move(&flip);
-            g = -nega_alpha_ordering(search, -beta, -alpha, depth - 1, false, LEGAL_UNDEFINED, is_end_search, searching);
+            g = -nega_alpha_ordering(search, -beta, -alpha, depth - 1, false, is_end_search, searching);
         search->board.undo(&flip);
         alpha = max(alpha, g);
         v = g;
@@ -235,7 +233,7 @@ int nega_alpha_ordering(Search *search, int alpha, int beta, int depth, bool ski
         #else
             for (const Flip &flip: move_list){
                 search->board.move(&flip);
-                    g = -nega_alpha_ordering(search, -beta, -alpha, depth - 1, false, flip.n_legal, is_end_search, searching);
+                    g = -nega_alpha_ordering(search, -beta, -alpha, depth - 1, false, is_end_search, searching);
                 search->board.undo(&flip);
                 alpha = max(alpha, g);
                 if (v < g){
@@ -260,12 +258,12 @@ int nega_alpha_ordering(Search *search, int alpha, int beta, int depth, bool ski
     return v;
 }
 
-int nega_scout(Search *search, int alpha, int beta, int depth, bool skipped, uint64_t legal, bool is_end_search){
+int nega_scout(Search *search, int alpha, int beta, int depth, bool skipped, bool is_end_search){
     if (!global_searching)
         return -INF;
     if (is_end_search && depth <= MID_TO_END_DEPTH){
         bool n_searching = true;
-        return nega_alpha_end(search, alpha, beta, skipped, legal, &n_searching);
+        return nega_alpha_end(search, alpha, beta, skipped, &n_searching);
     }
     if (!is_end_search && depth <= MID_FAST_DEPTH)
         return nega_alpha(search, alpha, beta, depth, skipped);
@@ -296,14 +294,13 @@ int nega_scout(Search *search, int alpha, int beta, int depth, bool skipped, uin
         alpha = max(alpha, l);
         beta = min(beta, u);
     #endif
-    if (legal == LEGAL_UNDEFINED)
-        legal = search->board.get_legal();
+    uint64_t legal = search->board.get_legal();
     int g, v = -INF;
     if (legal == 0ULL){
         if (skipped)
             return end_evaluate(&search->board);
         search->board.pass();
-            v = -nega_scout(search, -beta, -alpha, depth, true, LEGAL_UNDEFINED, is_end_search);
+            v = -nega_scout(search, -beta, -alpha, depth, true, is_end_search);
         search->board.pass();
         return v;
     }
@@ -319,7 +316,7 @@ int nega_scout(Search *search, int alpha, int beta, int depth, bool skipped, uin
         Flip flip;
         calc_flip(&flip, &search->board, best_move);
         search->board.move(&flip);
-            g = -nega_scout(search, -beta, -alpha, depth - 1, false, LEGAL_UNDEFINED, is_end_search);
+            g = -nega_scout(search, -beta, -alpha, depth - 1, false, is_end_search);
         search->board.undo(&flip);
         alpha = max(alpha, g);
         v = g;
@@ -336,16 +333,16 @@ int nega_scout(Search *search, int alpha, int beta, int depth, bool skipped, uin
         for (const Flip &flip: move_list){
             search->board.move(&flip);
                 if (v == -INF)
-                    g = -nega_scout(search, -beta, -alpha, depth - 1, false, flip.n_legal, is_end_search);
+                    g = -nega_scout(search, -beta, -alpha, depth - 1, false, is_end_search);
                 else{
-                    g = -nega_alpha_ordering(search, -alpha - 1, -alpha, depth - 1, false, flip.n_legal, is_end_search, &searching);
+                    g = -nega_alpha_ordering(search, -alpha - 1, -alpha, depth - 1, false, is_end_search, &searching);
                     if (alpha < g){
                         if (is_end_search){
                             g = value_to_score_int(g);
                             g -= g & 1;
                             g = score_to_value(g);
                         }
-                        g = -nega_scout(search, -beta, -g, depth - 1, false, flip.n_legal, is_end_search);
+                        g = -nega_scout(search, -beta, -g, depth - 1, false, is_end_search);
                     }
                 }
             search->board.undo(&flip);
@@ -396,7 +393,7 @@ pair<int, int> first_nega_scout(Search *search, int alpha, int beta, int depth, 
         Flip flip;
         calc_flip(&flip, &search->board, best_move);
         search->board.move(&flip);
-            g = -nega_scout(search, -beta, -alpha, depth - 1, false, LEGAL_UNDEFINED, is_end_search);
+            g = -nega_scout(search, -beta, -alpha, depth - 1, false, is_end_search);
             cerr << 1 << "/" << canput_all << " " << idx_to_coord(best_move) << " value " << value_to_score_double(g) << endl;
             //search->board.print();
             //cerr << endl;
@@ -417,11 +414,11 @@ pair<int, int> first_nega_scout(Search *search, int alpha, int beta, int depth, 
         for (const Flip &flip: move_list){
             search->board.move(&flip);
                 if (v == -INF)
-                    g = -nega_scout(search, -beta, -alpha, depth - 1, false, flip.n_legal, is_end_search);
+                    g = -nega_scout(search, -beta, -alpha, depth - 1, false, is_end_search);
                 else{
-                    g = -nega_alpha_ordering(search, -alpha - 1, -alpha, depth - 1, false, flip.n_legal, is_end_search, &searching);
+                    g = -nega_alpha_ordering(search, -alpha - 1, -alpha, depth - 1, false, is_end_search, &searching);
                     if (alpha < g)
-                        g = -nega_scout(search, -beta, -g, depth - 1, false, flip.n_legal, is_end_search);
+                        g = -nega_scout(search, -beta, -g, depth - 1, false, is_end_search);
                 }
                 if (g <= alpha)
                     cerr << mobility_idx << "/" << canput_all << " " << idx_to_coord((int)flip.pos) << " value " << value_to_score_double(g) << " or lower" << endl;

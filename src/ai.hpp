@@ -22,6 +22,14 @@ inline Search_result tree_search(Board board, int depth, bool use_mpc, double mp
     search.board = board;
     search.n_nodes = 0ULL;
 
+    child_transpose_table.init();
+    parent_transpose_table.init();
+    result = first_nega_scout(&search, -SCORE_MAX, SCORE_MAX, depth, false, is_end_search);
+    g = result.first;
+    policy = result.second;
+    if (show_log)
+        cerr << "depth " << depth << " value " << value_to_score_double(g) << " policy " << idx_to_coord(policy) << " nodes " << search.n_nodes << endl;
+    /*
     if (is_end_search){
         child_transpose_table.init();
 
@@ -150,6 +158,7 @@ inline Search_result tree_search(Board board, int depth, bool use_mpc, double mp
         if (show_log)
             cerr << "midsearch depth " << depth << " value " << value_to_score_double(g) << " policy " << idx_to_coord(policy) << " nodes " << search.n_nodes << endl;
     }
+    */
     Search_result res;
     res.depth = depth;
     res.nodes = search.n_nodes;
@@ -169,7 +178,7 @@ inline double tree_search_noid(Board board, int depth, bool use_mpc, double mpct
     search.n_nodes = 0ULL;
     search.use_mpc = use_mpc;
     search.mpct = mpct;
-    g = nega_scout(&search, -SCORE_MAX, SCORE_MAX, depth, false, LEGAL_UNDEFINED, is_end_search);
+    g = nega_scout(&search, -SCORE_MAX, SCORE_MAX, depth, false, is_end_search);
     return value_to_score_double(g);
 }
 

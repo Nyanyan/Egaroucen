@@ -18,7 +18,7 @@
 
 using namespace std;
 
-int nega_alpha_end_nomemo(Search *search, int alpha, int beta, int depth, bool skipped, uint64_t legal){
+int nega_alpha_end_nomemo(Search *search, int alpha, int beta, int depth, bool skipped){
     if (!global_searching)
         return SCORE_UNDEFINED;
     if (depth <= MID_FAST_DEPTH)
@@ -31,14 +31,13 @@ int nega_alpha_end_nomemo(Search *search, int alpha, int beta, int depth, bool s
         if (stab_res != SCORE_UNDEFINED)
             return stab_res;
     #endif
-    if (legal == LEGAL_UNDEFINED)
-        legal = search->board.get_legal();
+    uint64_t legal = search->board.get_legal();
     int g, v = -INF;
     if (legal == 0ULL){
         if (skipped)
             return end_evaluate(&search->board);
         search->board.pass();
-            v = -nega_alpha_end_nomemo(search, -beta, -alpha, depth, true, LEGAL_UNDEFINED);
+            v = -nega_alpha_end_nomemo(search, -beta, -alpha, depth, true);
         search->board.pass();
         return v;
     }
@@ -56,7 +55,7 @@ int nega_alpha_end_nomemo(Search *search, int alpha, int beta, int depth, bool s
     move_ordering(search, move_list, depth, alpha, beta, false);
     for (const Flip &flip: move_list){
         search->board.move(&flip);
-            g = -nega_alpha_end_nomemo(search, -beta, -alpha, depth - 1, false, flip.n_legal);
+            g = -nega_alpha_end_nomemo(search, -beta, -alpha, depth - 1, false);
         search->board.undo(&flip);
         alpha = max(alpha, g);
         v = max(v, g);
@@ -383,7 +382,7 @@ int nega_alpha_end_fast(Search *search, int alpha, int beta, bool skipped){
     return v;
 }
 
-int nega_alpha_end(Search *search, int alpha, int beta, bool skipped, uint64_t legal, const bool *searching){
+int nega_alpha_end(Search *search, int alpha, int beta, bool skipped, const bool *searching){
     if (!global_searching || !(*searching))
         return SCORE_UNDEFINED;
     if (search->board.n >= HW2 - END_FAST_DEPTH)
@@ -407,14 +406,13 @@ int nega_alpha_end(Search *search, int alpha, int beta, bool skipped, uint64_t l
         alpha = max(alpha, l);
         beta = min(beta, u);
     #endif
-    if (legal == LEGAL_UNDEFINED)
-        legal = search->board.get_legal();
+    uint64_t legal = search->board.get_legal();
     int g, v = -INF;
     if (legal == 0ULL){
         if (skipped)
             return end_evaluate(&search->board);
         search->board.pass();
-            v = -nega_alpha_end(search, -beta, -alpha, true, LEGAL_UNDEFINED, searching);
+            v = -nega_alpha_end(search, -beta, -alpha, true, searching);
         search->board.pass();
         return v;
     }
@@ -430,7 +428,7 @@ int nega_alpha_end(Search *search, int alpha, int beta, bool skipped, uint64_t l
         Flip flip;
         calc_flip(&flip, &search->board, best_move);
         search->board.move(&flip);
-            g = -nega_alpha_end(search, -beta, -alpha, false, LEGAL_UNDEFINED, searching);
+            g = -nega_alpha_end(search, -beta, -alpha, false, searching);
         search->board.undo(&flip);
         alpha = max(alpha, g);
         v = g;
@@ -445,7 +443,7 @@ int nega_alpha_end(Search *search, int alpha, int beta, bool skipped, uint64_t l
         move_ordering(search, move_list, HW2 - search->board.n, alpha, beta, true);
         for (const Flip &flip: move_list){
             search->board.move(&flip);
-                g = -nega_alpha_end(search, -beta, -alpha, false, flip.n_legal, searching);
+                g = -nega_alpha_end(search, -beta, -alpha, false, searching);
             search->board.undo(&flip);
             alpha = max(alpha, g);
             if (v < g){

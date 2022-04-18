@@ -18,8 +18,8 @@
 
 int nega_alpha_eval1(Search *search, int alpha, int beta, bool skipped);
 int nega_alpha(Search *search, int alpha, int beta, int depth, bool skipped);
-int nega_alpha_ordering_nomemo(Search *search, int alpha, int beta, int depth, bool skipped, uint64_t legal);
-int nega_scout(Search *search, int alpha, int beta, int depth, bool skipped, uint64_t legal, bool is_end_search);
+int nega_alpha_ordering_nomemo(Search *search, int alpha, int beta, int depth, bool skipped);
+int nega_scout(Search *search, int alpha, int beta, int depth, bool skipped, bool is_end_search);
 
 inline void move_sort_top(vector<Flip> &move_list, int best_idx){
     if (best_idx != 0)
@@ -45,7 +45,7 @@ inline void move_evaluate(Search *search, Flip *flip, const int alpha, const int
                 else{
                     bool use_mpc = search->use_mpc;
                     search->use_mpc = false;
-                        flip->value += (HW2 - value_to_score_int(nega_alpha_ordering_nomemo(search, alpha, beta, depth, false, flip->n_legal)));
+                        flip->value += (HW2 - value_to_score_int(nega_alpha_ordering_nomemo(search, alpha, beta, depth, false)));
                     search->use_mpc = use_mpc;
                 }
                 break;
