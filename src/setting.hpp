@@ -4,7 +4,7 @@
 #define USE_FAST_VERTICAL_MIRROR false
 
 // flip calculating
-#define FLIP_CALC_MODE 1
+#define FLIP_CALC_MODE 2
 #define LAST_FLIP_CALC_MODE 1
 
 // transpose table cut
@@ -19,8 +19,8 @@
 #define USE_END_SC false
 
 // prob cut
-#define USE_MID_MPC false
-#define USE_END_MPC false
+#define USE_MID_MPC true
+#define USE_END_MPC true
 
 // legal calculation
 #define LEGAL_CALCULATION_MODE 5

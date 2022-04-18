@@ -21,7 +21,7 @@ inline Search_result tree_search(Board board, int depth, bool use_mpc, double mp
     bool is_end_search = (HW2 - board.n == depth);
     search.board = board;
     search.n_nodes = 0ULL;
-
+    /*
     child_transpose_table.init();
     parent_transpose_table.init();
     result = first_nega_scout(&search, -SCORE_MAX, SCORE_MAX, depth, false, is_end_search);
@@ -29,7 +29,7 @@ inline Search_result tree_search(Board board, int depth, bool use_mpc, double mp
     policy = result.second;
     if (show_log)
         cerr << "depth " << depth << " value " << value_to_score_double(g) << " policy " << idx_to_coord(policy) << " nodes " << search.n_nodes << endl;
-    /*
+    */
     if (is_end_search){
         child_transpose_table.init();
 
@@ -158,7 +158,6 @@ inline Search_result tree_search(Board board, int depth, bool use_mpc, double mp
         if (show_log)
             cerr << "midsearch depth " << depth << " value " << value_to_score_double(g) << " policy " << idx_to_coord(policy) << " nodes " << search.n_nodes << endl;
     }
-    */
     Search_result res;
     res.depth = depth;
     res.nodes = search.n_nodes;
