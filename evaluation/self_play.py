@@ -25,7 +25,7 @@ def notation_to_coord(notation):
 def coord_to_notation(y, x):
     return chr(x + ord('a')) + str(y + 1)
 
-egaroucen = subprocess.Popen('./../src/test/a.out 7'.split(), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+egaroucen = subprocess.Popen('./../src/test/a.out 8'.split(), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
 
 def self_play():
     file_num = int(input())
