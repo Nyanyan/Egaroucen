@@ -21,6 +21,8 @@ print(files)
 exe = subprocess.Popen('./../src/test/create_data.out'.split(), stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr=subprocess.DEVNULL)
 
 for num, file in enumerate(files):
+    if file[-1] != 't':
+        continue
     with open(file, 'r') as f:
         records = f.read().splitlines()
     with open('./data/' + digit(num, 7) + '.txt', 'w') as f:
