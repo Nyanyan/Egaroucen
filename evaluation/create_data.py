@@ -16,6 +16,12 @@ def notation_to_coord(notation):
     return y, x
 
 files = glob.glob('./self_play/*')
+'''
+files = []
+for num in range(13, 16 + 1):
+    d = './self_play/' + digit(num, 7) + '/*'
+    files.extend(glob.glob(d))
+'''
 print(files)
 
 exe = subprocess.Popen('./../src/test/create_data.out'.split(), stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr=subprocess.DEVNULL)
