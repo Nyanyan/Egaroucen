@@ -111,12 +111,6 @@ inline int last1(Search *search, int alpha, int beta, int p0){
 */
 inline int last2(Search *search, int alpha, int beta, int p0, int p1, bool skipped){
     ++search->n_nodes;
-    #if USE_END_PO & false
-        int p0_parity = (search->board.parity & cell_div4[p0]);
-        int p1_parity = (search->board.parity & cell_div4[p1]);
-        if (!p0_parity && p1_parity)
-            swap(p0, p1);
-    #endif
     int v = -INF, g;
     Flip flip;
     calc_flip(&flip, &search->board, p0);
@@ -153,28 +147,6 @@ inline int last2(Search *search, int alpha, int beta, int p0, int p1, bool skipp
 
 inline int last3(Search *search, int alpha, int beta, int p0, int p1, int p2, bool skipped){
     ++search->n_nodes;
-    #if USE_END_PO
-        if (!skipped){
-            int p0_parity = (search->board.parity & cell_div4[p0]);
-            int p1_parity = (search->board.parity & cell_div4[p1]);
-            int p2_parity = (search->board.parity & cell_div4[p2]);
-            if (p0_parity == 0 && p1_parity && p2_parity){
-                int tmp = p0;
-                p0 = p1;
-                p1 = p2;
-                p2 = tmp;
-            } else if (p0_parity && p1_parity == 0 && p2_parity){
-                swap(p1, p2);
-            } else if (p0_parity == 0 && p1_parity == 0 && p2_parity){
-                int tmp = p0;
-                p0 = p2;
-                p2 = p1;
-                p1 = tmp;
-            } else if (p0_parity == 0 && p1_parity && p2_parity == 0){
-                swap(p0, p1);
-            }
-        }
-    #endif
     uint64_t legal = search->board.get_legal();
     int v = -INF, g;
     if (legal == 0ULL){
@@ -223,62 +195,6 @@ inline int last3(Search *search, int alpha, int beta, int p0, int p1, int p2, bo
 
 inline int last4(Search *search, int alpha, int beta, int p0, int p1, int p2, int p3, bool skipped){
     ++search->n_nodes;
-    #if USE_END_PO
-        if (!skipped){
-            int p0_parity = (search->board.parity & cell_div4[p0]);
-            int p1_parity = (search->board.parity & cell_div4[p1]);
-            int p2_parity = (search->board.parity & cell_div4[p2]);
-            int p3_parity = (search->board.parity & cell_div4[p3]);
-            if (p0_parity == 0 && p1_parity && p2_parity && p3_parity){
-                int tmp = p0;
-                p0 = p1;
-                p1 = p2;
-                p2 = p3;
-                p3 = tmp;
-            } else if (p0_parity && p1_parity == 0 && p2_parity && p3_parity){
-                int tmp = p1;
-                p1 = p2;
-                p2 = p3;
-                p3 = tmp;
-            } else if (p0_parity && p1_parity && p2_parity == 0 && p3_parity){
-                swap(p2, p3);
-            } else if (p0_parity == 0 && p1_parity == 0 && p2_parity && p3_parity){
-                swap(p0, p2);
-                swap(p1, p3);
-            } else if (p0_parity == 0 && p1_parity && p2_parity == 0 && p3_parity){
-                int tmp = p0;
-                p0 = p1;
-                p1 = p3;
-                p3 = p2;
-                p2 = tmp;
-            } else if (p0_parity == 0 && p1_parity && p2_parity && p3_parity == 0){
-                int tmp = p0;
-                p0 = p1;
-                p1 = p2;
-                p2 = tmp;
-            } else if (p0_parity && p1_parity == 0 && p2_parity == 0 && p3_parity){
-                int tmp = p1;
-                p1 = p3;
-                p3 = p2;
-                p2 = tmp;
-            } else if (p0_parity && p1_parity == 0 && p2_parity && p3_parity == 0){
-                swap(p1, p2);
-            } else if (p0_parity == 0 && p1_parity == 0 && p2_parity == 0 && p3_parity){
-                int tmp = p0;
-                p0 = p3;
-                p3 = p2;
-                p2 = p1;
-                p1 = tmp;
-            } else if (p0_parity == 0 && p1_parity == 0 && p2_parity && p3_parity == 0){
-                int tmp = p0;
-                p0 = p2;
-                p2 = p1;
-                p1 = tmp;
-            } else if (p0_parity == 0 && p1_parity && p2_parity == 0 && p3_parity == 0){
-                swap(p0, p1);
-            }
-        }
-    #endif
     uint64_t legal = search->board.get_legal();
     int v = -INF, g;
     if (legal == 0ULL){
@@ -345,11 +261,13 @@ inline void pick_vacant(Search *search, uint_fast8_t cells[]){
 int nega_alpha_end_fast(Search *search, int alpha, int beta, bool skipped){
     if (!global_searching)
         return SCORE_UNDEFINED;
+    /*
     if (search->board.n == 60){
         uint_fast8_t cells[4];
         pick_vacant(search, cells);
         return last4(search, alpha, beta, cells[0], cells[1], cells[2], cells[3], skipped);
     }
+    */
     ++search->n_nodes;
     #if USE_END_SC
         int stab_res = stability_cut(search, &alpha, &beta);

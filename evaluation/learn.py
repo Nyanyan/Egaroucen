@@ -81,13 +81,11 @@ same_pattern_num = [
     4, 4, 4, 4
 ]
 
-#for ply_strt in reversed([0, 10, 20, 30, 40, 50]):
 for ply_strt in reversed([10, 20, 30, 40, 50]):     ############################################
     ply_end = ply_strt + 10
 
-    game_num = 2000
     test_ratio = 0.1
-    n_epochs = 30
+    n_epochs = 100
     
     all_data = []
     
@@ -100,7 +98,7 @@ for ply_strt in reversed([10, 20, 30, 40, 50]):     ############################
         layers = []
         layers.append(Dense(16, name=names[i] + '_dense0'))
         layers.append(LeakyReLU(alpha=0.01))
-        layers.append(Dense(8, name=names[i] + '_dense1'))
+        layers.append(Dense(16, name=names[i] + '_dense1'))
         layers.append(LeakyReLU(alpha=0.01))
         layers.append(Dense(1, name=names[i] + '_out'))
         add_elems = []
@@ -118,6 +116,7 @@ for ply_strt in reversed([10, 20, 30, 40, 50]):     ############################
     '''
     
     model = load_model('learned_data/bef_' + str(ply_strt) + '_' + str(ply_end) + '.h5')
+    
 
     #model.summary()
     #plot_model(model, to_file='model.png', show_shapes=True)

@@ -49,7 +49,7 @@ using namespace std;
 #define P48 65536
 
 #define N_DENSE0 16
-#define N_DENSE1 8
+#define N_DENSE1 16
 
 constexpr uint_fast16_t pow3[11] = {1, P31, P32, P33, P34, P35, P36, P37, P38, P39, P310};
 uint64_t stability_edge_arr[N_8BIT][N_8BIT][2];

@@ -91,7 +91,7 @@ constexpr int mpcd[61] = {
 #define probcut_d -0.0001047218699444686
 #define probcut_e 0.01093547044745102
 #define probcut_f -0.36362643370418024
-#define probcut_g 6.071950100378323
+#define probcut_g 4.071950100378323
 
 #define probcut_end_a -0.007067691798918974
 #define probcut_end_b -0.03625767020840132
