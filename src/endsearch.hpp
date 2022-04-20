@@ -261,6 +261,8 @@ inline void pick_vacant(Search *search, uint_fast8_t cells[]){
 int nega_alpha_end_fast(Search *search, int alpha, int beta, bool skipped){
     if (!global_searching)
         return SCORE_UNDEFINED;
+    if (search->board.n == HW2)
+        return end_evaluate(&search->board);
     /*
     if (search->board.n == 60){
         uint_fast8_t cells[4];
